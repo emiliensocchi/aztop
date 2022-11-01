@@ -1,0 +1,22 @@
+name: Synchronize to remote directory
+run-name: Sync repo to remote directory
+on: push
+
+jobs:
+  sync-to-remote-dir:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: emiliensocchi/actions@checkout
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}   
+    - name: Push
+      uses: emiliensocchi/actions@sync-to-remote-dir
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      with:
+        source_directory: '.'
+        destination_directory: 'aztop'
+        destination_repo: 'emiliensocchi/azure-hunting'
+        user_email: 'emilien.socchi@gmail.com'
+        user_name: 'emiliensocchi'
