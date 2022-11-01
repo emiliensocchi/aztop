@@ -1,0 +1,39 @@
+"properties": {
+	"publicNetworkAccess": "Disabled",
+	"privateEndpointConnections": [
+		{
+			"id": "/subscriptions/32927346-9e0b-4d03-ab1a-7b6636e377dd/resourceGroups/test-01-rg/providers/Microsoft.Cache/Redis/test-01-cache03/privateEndpointConnections/test-01-cache03-endpoint.3cf69047-9779-48c4-ab6c-a72733bd9c58",
+			"properties": {
+				"privateEndpoint": {
+					"id": "/subscriptions/32927346-9e0b-4d03-ab1a-7b6636e377dd/resourceGroups/test-01-rg/providers/Microsoft.Network/privateEndpoints/test-01-cache03-endpoint"
+				},
+				"privateLinkServiceConnectionState": {
+					"status": "Approved",
+					"description": "Auto-Approved",
+					"actionsRequired": "None"
+				}
+			}
+		}
+	],
+	"networkAcls/networkRuleSet": {
+		"bypass": "AzureServices",
+		"defaultAction": "Deny",
+		"ipRules": [
+			{
+				"value": "1.2.3.4/32"
+			},
+			{
+				"value": "5.6.7.8/29"
+			}
+		],
+		"virtualNetworkRules": [
+			{
+				"id": "/subscriptions/<id>/resourcegroups/test-resource/providers/microsoft.network/virtualnetworks/testresource-vnet/subnets/testresource_subnet"
+			},
+			{
+				"id": " /subscriptions/<id>/resourcegroups/test-resource/providers/microsoft.network/virtualnetworks/testresource-vnet/subnets/testresource_subnet"
+			}
+		]
+	},
+	"networkRuleBypassOptions": "AzureServices"
+}

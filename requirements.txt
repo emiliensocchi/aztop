@@ -1,0 +1,7 @@
+azure.identity
+datetime
+importlib
+prettytable
+progress
+pyfiglet
+requests
