@@ -271,4 +271,4 @@ The values available in the `properties` field of a resource can be found in the
 The retrievial of network information is already taken care of by the module template.
 ARM APIs tend however to be inconsistent. In case, the network information of the resource processed by your module is formatted and/or located in an uncommon place, you will most likely need to implement that part yourself.
 
-Request throttling that may occur when retrieving the content of a resource via its resource provider is also taken care of by the module template (see the `aztop/utils.py/get_resource_content_using_multiple_api_versions()` function for more info on how this is hanlded).
+Request throttling that may occur when retrieving the content of a resource via its resource provider is also taken care of by the module template (see the `aztop/utils.py/get_resource_content_using_multiple_api_versions()` function for more info on how this is hanlded). 
