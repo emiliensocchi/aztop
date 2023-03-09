@@ -378,6 +378,67 @@ def get_resource_content_using_multiple_api_versions(access_token, resource_path
     return None
 
 
+def modify_resource_content_using_multiple_api_versions(access_token, resource_path, request_body, api_versions, spinner):
+    """
+        Modifies the content of the resource with the passed resource path and API version, using the passed request body.
+
+        Example of resource path: 
+            /subscriptions/6c79977e-36f6-495f-a35a-898a76b720c7/resourceGroups/myRg/providers/Microsoft.Compute/virtualMachines/testVm-ubuntu-1
+
+        Args:
+            access_token (str): a valid access token issued for the ARM API
+            resource_path (str): full path identifying the resource to modify
+            request_body (dict): the parameters specifying the changes to be requested in the resource
+            api_version (str): an API version compatible with the resource type of the resource to be modified
+            spinner (progress.Spinner): reference to the spinner used to show progress to the user when iterating through multiple resources
+    
+        Returns:
+            dict(): the properties of the modified resource in json format
+            None: if the resource could not be retrieved (e.g. due to an incompatible API version)
+
+    """
+    default_throttling_error_response = 'toomanyrequests'
+    default_unsupported_feature_substring = 'featurenotsupported'
+
+    for api_version in api_versions:
+        url = f"{ARM_BASEURL}{resource_path}?api-version={api_version}"
+        headers = {'Authorization': f"Bearer {access_token}"}
+        body = request_body
+        response = requests.post(url, headers = headers, json = body)
+
+        if response.status_code == 200:
+            # The resource has been modified successfully
+            return response.json()
+
+        error = json.loads(response.text)['error']
+        error_code = error['code'].lower()
+
+        if error_code == default_throttling_error_response:
+            # Microsoft is throttling requests to the ARM API
+            retry_header_name = 'Retry-After'
+            seconds_to_sleep = int(response.headers[retry_header_name])
+
+            # Wait until throttling is over, while updating the spinner continuously to inform the user
+            original_message = spinner.message
+
+            for i in range(seconds_to_sleep):
+                remaining = seconds_to_sleep - i
+                spinner.message = f"Throttled for {remaining}s. Be patient ... "
+                spinner.update()
+                time.sleep(1)
+                spinner.next()
+
+            # Reset the spinner's message to its original value
+            spinner.message = original_message
+            spinner.update()            
+
+        elif default_unsupported_feature_substring in error_code:
+            # The content requested is unsupported (applicable only to specific resources such as Storage Accounts)
+            return None
+
+    return None
+
+
 def get_resource_content_using_single_api_version(access_token, resource_path, api_version):
     """
         Retrieves the content of the resource with the passed resource path and API version.
