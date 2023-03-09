@@ -39,9 +39,13 @@ The tool is currently able to provide an overview of the following Azure resourc
 
 aztop is also able to provide the following kinds of overviews through dedicated modules:
 
+- Overview of all user- and system-assigned Managed Identity (MI) with their associated consumer(s)
+
 - Overview of inbound connections in all Network Security Groups (NSGs)
 
-- Overview of all user- and system-assigned Managed Identity (MI) with their associated consumer(s)
+- Overview of all hostnames handled by all Load Balancers
+
+- Overview of the entire external attack surface of the environment (i.e.  all unrestricted public endpoints and public IP addresses associated with a VM)
 
 
 # Prerequisite
