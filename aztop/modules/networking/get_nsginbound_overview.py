@@ -48,7 +48,7 @@ class Module():
             os._exit(0)
         
         nsg_overview = dict()
-        subscriptions = utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
