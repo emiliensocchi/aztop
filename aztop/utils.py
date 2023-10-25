@@ -334,12 +334,14 @@ def get_resource_content_using_multiple_api_versions(access_token, resource_path
     
         Returns:
             dict(): the resource's properties in json format
+            str('hidden'): if the resource attempted to be retrieved is managed by Microsoft
             None: if the content of the resource could not be retrieved or does not exis
 
     """
     default_throttling_error_response = 'toomanyrequests'
+    default_incorrect_tenant_error_response = 'invalidauthenticationtokentenant'
     default_unsupported_feature_substring = 'featurenotsupported'
-
+    
     for api_version in api_versions:
         url = f"{ARM_BASEURL}{resource_path}?api-version={api_version}"
         headers = {'Authorization': f"Bearer {access_token}"}
@@ -352,6 +354,10 @@ def get_resource_content_using_multiple_api_versions(access_token, resource_path
         error = json.loads(response.text)['error']
         error_code = error['code'].lower()
 
+        if error_code == default_incorrect_tenant_error_response:
+            # Attempting to retrieve the content of a resource managed by Microsoft (i.e. ref. hidden resources in the portal)
+            return 'hidden'
+        
         if error_code == default_throttling_error_response:
             # Microsoft is throttling requests to the ARM API
             retry_header_name = 'Retry-After'
@@ -478,6 +484,7 @@ def get_resource_network_exposure(access_token, subscription_id, resource_proper
     
         Returns:
             dict(str: list, str: bool): the network exposure of the resource
+            str('hidden'): if the resource attempted to be retrieved is managed by Microsoft
             None: in case the resource has private endpoints that fail to be retrieved
 
     """
@@ -571,7 +578,11 @@ def get_resource_network_exposure(access_token, subscription_id, resource_proper
             private_endpoint_resource_path = private_endpoint_properties['id']
             private_endpoint_content = get_resource_content_using_multiple_api_versions(access_token, private_endpoint_resource_path, api_versions, spinner)
 
-            if not private_endpoint_content:
+            if private_endpoint_content == 'hidden':
+                # The resource attempted to be retrieved is managed by Microsoft
+                return private_endpoint_content
+            
+            elif not private_endpoint_content: 
                 return None
 
             private_endpoint_properties = private_endpoint_content['properties']

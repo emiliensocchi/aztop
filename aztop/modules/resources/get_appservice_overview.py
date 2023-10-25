@@ -92,6 +92,10 @@ class Module():
                     property_name = 'httpsOnly'
                     app_service_https_only = 'Yes' if app_service_properties[property_name] else 'No'
 
+                    #-- Gather hostname data
+                    property_name = 'defaultHostName'
+                    app_service_hostname = f"https://{app_service_properties[property_name]}"
+
                     #-- Acquire App Service configuration
                     app_service_config_path = f"{app_service}/config"
                     app_service_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, app_service_config_path, api_versions, spinner)
@@ -167,7 +171,11 @@ class Module():
                     app_service_properties['networkAcls'] = network_acls
                     app_service_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, app_service_properties, spinner)
 
-                    if not app_service_network_exposure:
+                    if app_service_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
+                    elif not app_service_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for App Service with properties: {app_service_properties}"
                         utils.log_to_file(self._log_file_path, error_text)
@@ -179,7 +187,8 @@ class Module():
                         'type': app_service_type,
                         'ftpstate': app_service_ftp_state, 
                         'httpsonly': app_service_https_only,
-                        'tlsversion' : app_service_minimum_tls_version
+                        'tlsversion' : app_service_minimum_tls_version,
+                        'hostname': app_service_hostname
                     }
 
                 bar.next()
@@ -191,7 +200,8 @@ class Module():
         column_4 = 'FTP State'
         column_5 = 'HTTPS only'
         column_6 = 'Minimum TLS version'
-        column_names = [column_1, column_2, column_3, column_4, column_5, column_6]
+        column_7 = 'URL'
+        column_names = [column_1, column_2, column_3, column_4, column_5, column_6, column_7]
         
         utils.export_resource_overview_to_csv(self._output_file_path, column_names, app_service_overview)
 
