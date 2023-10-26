@@ -772,3 +772,47 @@ def get_database_server_network_exposure(access_token, subscription_id, resource
         db_server_network_exposure['whitelisted'] = db_server_network_exposure['whitelisted'] + private_endpoint_rules
 
     return db_server_network_exposure
+
+
+def generate_storageaccount_sas_token(access_token, storageaccount_resource_path, api_versions, spinner):
+    """
+        Requests the generation of a SAS token for a Storage Account with the passed resource path and API version.
+
+        Example of resource path: 
+            /subscriptions/2a99b930-f4ca-4062-8dca-5bafcbe540db/resourceGroups/UnifyKongHq/providers/Microsoft.Storage/storageAccounts/testsa1/listaccountsas
+
+        Args:
+            access_token (str): a valid access token issued for the ARM API
+            storageaccount_resource_path (str): full path identifying the resource to retrieve
+            api_version (str): an API version compatible with the resource type of the resource to be retrieved
+            spinner (progress.Spinner): reference to the spinner used to show progress to the user when iterating through multiple resources
+    
+        Returns:
+            str(): a SAS token for the Storage Account
+            None: if the SAS token could not be generated
+
+    """
+    # THE SAS TOKEN SHOULD BE RESTRICTED TO MY OUTBOUND IP !?!?!?!?!?!?!?!!??!?!?!!?
+    current_time = datetime.datetime.utcnow()
+    twenty_minutes_before_now = current_time - datetime.timedelta(minutes = 20)
+    three_hours_from_now = current_time + datetime.timedelta(hours = 3)
+    sas_start_time = twenty_minutes_before_now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    sas_end_time = three_hours_from_now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    request_body = {
+        "signedServices": "bfqt",
+        "signedResourceTypes": "sco",
+        "signedPermission": "rl",
+        "signedProtocol": "https",
+        "signedStart": sas_start_time,
+        "signedExpiry": sas_end_time,
+        "keyToSign": "key1"
+    }
+    sas_token_response = modify_resource_content_using_multiple_api_versions(access_token, storageaccount_resource_path, request_body, api_versions, spinner)
+ 
+    if sas_token_response:
+        # The sas token has been generated successfully
+        storage_account_property_name = 'accountSasToken'
+        sas_token = sas_token_response[storage_account_property_name]
+        return sas_token
+
+    return None
