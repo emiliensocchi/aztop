@@ -187,6 +187,10 @@ class Module():
 
                     postgresql_server_network_exposure = utils.get_database_server_network_exposure(self._access_token,subscription, postgresql_server_properties, postgresql_server_firewall_rules_properties, postgresql_server_vnet_rules_properties, spinner)
 
+                    if postgresql_server_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not postgresql_server_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for PostgreSQL Server with properties: {postgresql_server_properties}"

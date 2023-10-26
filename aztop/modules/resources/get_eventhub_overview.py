@@ -103,6 +103,10 @@ class Module():
 
                     eventhub_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, eventhub_properties, spinner)
 
+                    if eventhub_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not eventhub_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for Service Bus with properties: {eventhub_properties}"

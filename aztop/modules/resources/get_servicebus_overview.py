@@ -97,6 +97,10 @@ class Module():
 
                     service_bus_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, service_bus_properties, spinner)
 
+                    if service_bus_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not service_bus_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for Service Bus with properties: {service_bus_properties}"

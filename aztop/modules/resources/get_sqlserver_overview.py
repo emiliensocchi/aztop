@@ -128,6 +128,10 @@ class Module():
                     
                     sql_server_network_exposure = utils.get_database_server_network_exposure(self._access_token,subscription, sql_server_properties, sql_server_firewall_rules_properties, sql_server_vnet_rules_properties, spinner)
 
+                    if sql_server_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not sql_server_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for SQL Server with properties: {sql_server_properties}"

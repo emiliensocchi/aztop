@@ -100,6 +100,7 @@ class Module():
                     #-- Gather general metadata
                     storage_account_name = storage_account_content['name']
                     storage_account_properties = storage_account_content['properties']
+                    storage_account_kind = storage_account_content['kind']
                     
                     #-- Gather secure transfer data
                     storage_account_propery_name = 'supportsHttpsTrafficOnly'
@@ -272,53 +273,58 @@ class Module():
                         #-- Set that the Storage Account uses the Blob Service at the end, to avoid errors when reporting to csv if storage_account_blob_service could not be retrieved
                         storage_account_service_type = 'Blob'
 
-                    # Gather File service data
-                    file_service_share_path = '/fileServices/default/shares'
-                    storage_account_fileshares_path = f"{storage_account}{file_service_share_path}"
-                    resource_type = f"{self._resource_type}/fileServices"
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                    fileshares = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_fileshares_path, api_versions, spinner)
+                    if not storage_account_kind == 'BlobStorage':
+                        # Gather File service data
+                        file_service_share_path = '/fileServices/default/shares'
+                        storage_account_fileshares_path = f"{storage_account}{file_service_share_path}"
+                        resource_type = f"{self._resource_type}/fileServices"
+                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        fileshares = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_fileshares_path, api_versions, spinner)
 
-                    if fileshares:
-                        fileshares_keys = fileshares
-                        content_key = 'value'
+                        if fileshares:
+                            fileshares_keys = fileshares
+                            content_key = 'value'
+                            
+                            if content_key in fileshares_keys and fileshares[content_key]:
+                                # The Storage Account uses the File Service
+                                storage_account_service_type = 'File' if not storage_account_service_type else f"{storage_account_service_type}, File"
+    
+                        # Gather Queue service data
+                        queue_service_share_path = '/queueServices/default/queues'
+                        storage_account_queues_path = f"{storage_account}{queue_service_share_path}"
+                        resource_type = f"{self._resource_type}/queueServices"
+                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        queues = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_queues_path, api_versions, spinner)
+
+                        if queues:
+                            queues_keys = queues
+                            content_key = 'value'
                         
-                        if content_key in fileshares_keys and fileshares[content_key]:
-                            # The Storage Account uses the File Service
-                            storage_account_service_type = 'File' if not storage_account_service_type else f"{storage_account_service_type}, File"
- 
-                    # Gather Queue service data
-                    queue_service_share_path = '/queueServices/default/queues'
-                    storage_account_queues_path = f"{storage_account}{queue_service_share_path}"
-                    resource_type = f"{self._resource_type}/queueServices"
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                    queues = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_queues_path, api_versions, spinner)
+                            if content_key in queues_keys and queues[content_key]:
+                                # The Storage Account uses the Queue Service
+                                storage_account_service_type = 'Queue' if not storage_account_service_type else f"{storage_account_service_type}, Queue"
 
-                    if queues:
-                        queues_keys = queues
-                        content_key = 'value'
-                    
-                        if content_key in queues_keys and queues[content_key]:
-                            # The Storage Account uses the Queue Service
-                            storage_account_service_type = 'Queue' if not storage_account_service_type else f"{storage_account_service_type}, Queue"
+                        # Gather Table service data
+                        table_service_share_path = '/tableServices/default/tables'
+                        storage_account_tables_path = f"{storage_account}{table_service_share_path}"
+                        resource_type = f"{self._resource_type}/tableServices"
+                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        tables = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_tables_path, api_versions, spinner)
 
-                    # Gather Table service data
-                    table_service_share_path = '/tableServices/default/tables'
-                    storage_account_tables_path = f"{storage_account}{table_service_share_path}"
-                    resource_type = f"{self._resource_type}/tableServices"
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                    tables = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_tables_path, api_versions, spinner)
-
-                    if tables:
-                        tables_keys = tables
-                        content_key = 'value'
-                        
-                        if content_key in tables_keys and tables[content_key]:
-                            # The Storage Account uses the Table Service
-                            storage_account_service_type = 'Table' if not storage_account_service_type else f"{storage_account_service_type}, Table"
+                        if tables:
+                            tables_keys = tables
+                            content_key = 'value'
+                            
+                            if content_key in tables_keys and tables[content_key]:
+                                # The Storage Account uses the Table Service
+                                storage_account_service_type = 'Table' if not storage_account_service_type else f"{storage_account_service_type}, Table"
 
                     #-- Gather networking data
                     storage_account_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, storage_account_properties, spinner)
+
+                    if storage_account_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
 
                     if not storage_account_network_exposure:
                         self._has_errors = True

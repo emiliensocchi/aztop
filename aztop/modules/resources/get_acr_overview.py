@@ -102,6 +102,10 @@ class Module():
                     #-- Gather networking data
                     acr_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, acr_properties, spinner)
 
+                    if acr_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not acr_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for ACR with properties: {acr_properties}"

@@ -98,6 +98,10 @@ class Module():
                     #-- Gather networking data
                     keyvault_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, keyvault_properties, spinner)
 
+                    if keyvault_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not keyvault_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for Key Vault with properties: {keyvault_properties}"

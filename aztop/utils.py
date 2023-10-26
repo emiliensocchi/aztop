@@ -646,6 +646,7 @@ def get_database_server_network_exposure(access_token, subscription_id, resource
     
         Returns:
             dict(str: list, str: bool): the network exposure of the resource
+            str('hidden'): if the resource attempted to be retrieved is managed by Microsoft
             None: in case the resource has private endpoints that fail to be retrieved
 
     """
@@ -719,7 +720,11 @@ def get_database_server_network_exposure(access_token, subscription_id, resource
             private_endpoint_resource_path = private_endpoint_properties['id']
             private_endpoint_content = get_resource_content_using_multiple_api_versions(access_token, private_endpoint_resource_path, api_versions, spinner)
 
-            if not private_endpoint_content:
+            if private_endpoint_content == 'hidden':
+                # The resource attempted to be retrieved is managed by Microsoft
+                return private_endpoint_content
+            
+            elif not private_endpoint_content: 
                 return None
 
             private_endpoint_properties = private_endpoint_content['properties']

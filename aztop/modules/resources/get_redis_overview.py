@@ -98,6 +98,10 @@ class Module():
                     #-- Gather networking data
                     redis_database_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, redis_database_properties, spinner)
 
+                    if redis_database_network_exposure == 'hidden':
+                        # The resource attempted to be retrieved is managed by Microsoft
+                        continue
+
                     if not redis_database_network_exposure:
                         self._has_errors = True
                         error_text = f"Could not retrieve network exposure for Redis database with properties: {redis_database_properties}"
