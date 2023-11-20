@@ -25,7 +25,7 @@ class Module():
                 - Whether soft delete is enabled for containers and how long
                 - Whether soft delete is enabled for individual blobs and how long
                 - Whether immutability is enabled 
-            • Which data-plane authorization model the Storage Account is using (Azure AD or Shared Access Signature - SAS)
+            • Which data-plane authorization model the Storage Account is using (Azure AD or Shared Access Signature - SAS) 
 
     """
     _output_file_path = str()
