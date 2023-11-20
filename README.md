@@ -33,7 +33,6 @@ The tool is currently able to provide an overview of the following Azure resourc
 
 - Storage Accounts
 
-- Managed Identities 
 
 ## Other supported overviews
 
@@ -45,13 +44,11 @@ aztop is also able to provide the following kinds of overviews through dedicated
 
 - Overview of all hostnames handled by all Load Balancers
 
-- Overview of the entire external attack surface of the environment (i.e.  all unrestricted public endpoints and public IP addresses associated with a VM)
-
 
 # Prerequisite
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
-- An Azure AD user with Contributor access to the subscription(s) that should be analyzed
+- An Entra ID user with Contributor access to the subscription(s) that should be analyzed
 
 
 # Installation 
@@ -153,7 +150,7 @@ python aztop/aztop.py -arm <access-token-value>
 
 ## Retrieving an access token for the GRAPH API
 
-**Usecase: Azure AD reviews - <u>not supported yet</u>**
+**Usecase: Entra ID reviews - <u>not supported yet</u>**
 
 An access token for the GRAPH API may be retrieved as follows:
 
