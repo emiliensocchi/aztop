@@ -3,13 +3,13 @@
 Simple and extensible framework to acquire a quick and comprehensive overview of an Azure tenant.
 
 
-# Overview
+## Overview
 
-aztop allows visualizing multiple aspects of an Azure tenant, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
+aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
 
 CSV files can then be visualized as tables to acquire a comprehensive overview of large environements in no time.
 
-## Supported Azure resources
+### Supported Azure resources
 
 The tool is currently able to provide an overview of the following Azure resources:
 
@@ -34,7 +34,7 @@ The tool is currently able to provide an overview of the following Azure resourc
 - Storage Accounts
 
 
-## Other supported overviews
+### Other supported overviews
 
 aztop is also able to provide the following kinds of overviews through dedicated modules:
 
@@ -45,13 +45,13 @@ aztop is also able to provide the following kinds of overviews through dedicated
 - Overview of all hostnames handled by all Load Balancers
 
 
-# Prerequisite
+## Prerequisite
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
 - An Entra ID user with Contributor access to the subscription(s) that should be analyzed
 
 
-# Installation 
+## Installation 
 
 From the package's root directory, follow the instructions below.
 
@@ -68,11 +68,11 @@ pipenv install -r requirements.txt
 ```
 
 
-# Usage
+## Usage
 
 aztop is an interactive tool. Authentication is therefore performed interactively via a web browser unless an access token is passed manually to the tool.
 
-## Using a member account
+### Using a member account
 
 **Scenario**: "I want to analyze a tenant with a user account who is a <u>member</u> of that tenant"
 
@@ -80,7 +80,7 @@ aztop is an interactive tool. Authentication is therefore performed interactivel
 python aztop/aztop.py
 ```
 
-## Using a guest account
+### Using a guest account
 
 **Scenario**: "I want to analyze a tenant with a user account who is a <u>guest</u> of that tenant"
 
@@ -88,16 +88,14 @@ python aztop/aztop.py
 python aztop/aztop.py -tid <guid-of-tenant-to-analyze>
 ```
 
-## Using an access token acquired by other means
+### Using an access token acquired by other means
 
 **Scenario**: "I cannot log into the Azure portal and run aztop on the same machine"
 
 ```shell
 python aztop/aztop.py -arm <access-token-value>
 ```
-```shell
-python aztop/aztop.py -aad <access-token-value>
-```
+
 
 There are situations where the need to pass an access token manually to aztop might be useful. 
 
@@ -107,9 +105,9 @@ Typical examples are:
 
 - The machine where aztop is running does not have a web browser to sign in interactively (i.e. no GUI available)
 
-Extracting an access token from the Azure portal, where a test user is already authenticated to the right tenant and passing it to aztop can be an easy way to get around such limitations (see "Retrieving access tokens manually" for more info).
+Extracting an access token from the Azure portal, where a test user is already authenticated to the right tenant and passing it to aztop can be an easy way to get around such limitations.
 
-## Scanning specific Azure subscriptions
+### Scanning specific Azure subscriptions
 
 **Scenario**: "I have access to a large number of subscriptions but only want to scan a subset of them"
 
@@ -120,62 +118,7 @@ python aztop/aztop.py -sub <sub_1_uuid>,<sub_2_uuid>,<sub_x_uuid>
 Note that aztop scans all subscriptions that an ARM access token provides access to by default.
 
 
-# Retrieving access tokens manually
-
-## Retrieving an access token for the ARM API
-
-**Usecase: Azure reviews**
-
-An access token for the ARM API may be retrieved as follows:
-
-0. Make sure you are authenticated to the right tenant in the Azure portal
-
-1. Open the developer tools in your browser
-
-2. Go to the "network" tab
-
-3. Enter "management.azure.com" in the filter field
-
-4. Browse in the portal until you see some requests towards the "/batch?api-version=*" endpoint
-
-5. Pick one of those requests and make sure its "Request Method" is set to "POST" (<u>not</u> "OPTIONS")
-
-6. In the "Headers" tab of the request, scroll down to the "Request Headers" section and copy the access token (usually starting with "ey...")
-
-7. Pass the token value to aztop as follows:
-
-```shell
-python aztop/aztop.py -arm <access-token-value>
-```
-
-## Retrieving an access token for the GRAPH API
-
-**Usecase: Entra ID reviews - <u>not supported yet</u>**
-
-An access token for the GRAPH API may be retrieved as follows:
-
-0. Make sure you are authenticated to the right tenant in the Azure portal
-
-1. Open the developer tools in your browser
-
-2. Go to the "network" tab
-
-3. Enter "-internal" in the filter field
-
-4. Browse in the portal until you see some requests towards the "/beta/$batch" endpoint
-
-5. Pick one of those requests and make sure its "Request Method" is set to "POST" (<u>not</u> OPTIONS)
-
-6. In the "Headers" tab of the request, scroll down to the "Request Headers" section and copy the access token (usually starting with "ey...")
-
-7. Pass the token value to aztop as follows:
-
-```shell
-python aztop/aztop.py -aad <access-token-value>
-```
-
-
-# Visualizing csv data
+## Visualizing csv data
 
 For each module executed by aztop, a csv file of the following format will be generated in the `aztop/output` directory:
 - yyyy-mm-dd_\<module-name\>.csv
@@ -185,9 +128,7 @@ Examples:
 - 2022-08-31_get_appservice_overview.csv
 - 2022-12-24_get_keyvault_overview.csv
 
-At this point, any csv viewer such as Microsoft Excel may be used to visualized the files in form of tables, but installing such tools might sometimes be a pain in the scanrig.
-
-The easiest way is to install [Visual Studio Code](https://code.visualstudio.com/download) and use its [Excel Viewer](https://marketplace.visualstudio.com/items?itemName=GrapeCity.gc-excelviewer) extension.
+Although any csv viewer can be used to visualize the files in table format, the easiest approach is to use [Visual Studio Code](https://code.visualstudio.com/download) and its [Excel Viewer](https://marketplace.visualstudio.com/items?itemName=GrapeCity.gc-excelviewer) extension.
 
 Once installed, the visualization of all CSV files produced by aztop can easily be instantiated from the terminal as follows:
 
@@ -195,27 +136,25 @@ Once installed, the visualization of all CSV files produced by aztop can easily 
 code aztop/output/*
 ```
 
-# Known issues
+## Known issues
 
-## Rate limiting on the ARM API
+### Rate limiting on the ARM API
 
 **Solution: Be patient and get a coffee**
 
-The API for the Azure Resource Manager (ARM) sets a limit for the number of operations allowed within a tenant, subscription and individual resource provider.
-
-You might therefore experience request throttling when scanning a very large environment or when multiple consultants are using aztop at the same time from the scanrig (i.e. all requests are coming from the same outbound IP address).
+The API for the Azure Resource Manager (ARM) sets a limit for the number of operations allowed within a tenant, subscription and individual resource provider. You might therefore experience request throttling when scanning a very large environment.
 
 Note that aztop automatically handles throttling limitations, by parsing the amount of time the ARM API requires you to wait (i.e. that number of seconds is served as a "Retry-After" header in the server response from the ARM API).
 
 When rate limiting kicks in, you will see the following string appearing next to the aztop spinner:
-- "Throttled for \<number-of-seconds-to-wait\>s. Be patient ... "
+```code
+Throttled for <number-of-seconds-to-wait>s. Be patient ...
+```
 
-More info about rate limiting in ARM:
-
-- https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
+More info about rate limiting in ARM: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
 
 
-## Out of Memory issue on WSL
+### Out of Memory issue on WSL
 
 **Solution: Avoid using WSL for scanning large environments**
 
@@ -225,16 +164,16 @@ The error thrown when this occurs has usually nothing to do with memory consumpt
 
 `Max retries exceeded with url Caused by NewConnectionError Failed to establish a new connection: [Errno -3] Temporary failure in name resolution`
 
-The simplest solution is to run aztop natively on the Windows VM, instead of using WSL.
+The simplest solution is to run aztop natively on the Windows machine, instead of using WSL.
 
 
-# Contributing to the project
+## Contributing to the project
 
 aztop aims to be a modular framework, where new modules can be plugged into the tool easily. To get started with the developement of a new module, the below procedure is recommended.
 
-## Step 1: Find a module category 
+### Step 1: Find a module category 
 
-Check if the the `aztop/modules` directory contains a category that will suit your new module.
+Check if the `aztop/modules` directory contains a category that will suit your new module.
 
 For example, the "resources" category suits modules providing a complete overview of specific types of resources, while the "iam" category provides overviews of IAM configurations.
 
@@ -244,21 +183,21 @@ In case no category fits the purpose of your future module, feel free to create 
 
 Note that most modules will suit the "resources" category.
 
-## Step 2: Move the module template to the correct category
+### Step 2: Move the module template to the correct category
 
-Copy the `aztop/template/module_template.py` file to the category of your choice and rename it using the following format `<get-[purpose]-overview>`.
+Copy the `aztop/template/module_template.py` file to the category of your choice and rename it using the following format `<get-[purpose]-overview.py>`.
 
 * Example: `aztop/modules/resources/get-apim-overview.py`
 
 Note that the above example is for a module providing a complete overview of API Management resources.
 
-## Step 3: Make yourself familiar with the module template
+### Step 3: Make yourself familiar with the module template
 
 At this point, the source code of the module template should be self-explanatory.
 
-Start by refactoring the code with the name of the resource processed by your module, as explained in the description of `Module()` class within the the template.
+Start by refactoring the code with the name of the resource processed by your module, as explained in the description of the `Module()` class within the the template.
 
-### General guidelines
+#### General guidelines
 
 The main part of a resource's configuration is located in its `properties` field. The creation of a new modules consists therefore of parsing the results from that field into a data structure that can be exported to the CSV format.
 
@@ -267,7 +206,7 @@ Note that all endpoints in the ARM API return data in json.
 The values available in the `properties` field of a resource can be found in the resource's official ARM documentation:
 - https://docs.microsoft.com/en-us/rest/api/azure/
 
-### About networking
+#### About networking
 
 The retrievial of network information is already taken care of by the module template.
 ARM APIs tend however to be inconsistent. In case, the network information of the resource processed by your module is formatted and/or located in an uncommon place, you will most likely need to implement that part yourself.
