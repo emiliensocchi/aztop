@@ -147,9 +147,8 @@ The API for the Azure Resource Manager (ARM) sets a limit for the number of oper
 Note that aztop automatically handles throttling limitations, by parsing the amount of time the ARM API requires you to wait (i.e. that number of seconds is served as a "Retry-After" header in the server response from the ARM API).
 
 When rate limiting kicks in, you will see the following string appearing next to the aztop spinner:
-```code
-Throttled for <number-of-seconds-to-wait>s. Be patient ...
-```
+
+`Throttled for <number-of-seconds-to-wait>s. Be patient ...`
 
 More info about rate limiting in ARM: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
 
@@ -203,8 +202,7 @@ The main part of a resource's configuration is located in its `properties` field
 
 Note that all endpoints in the ARM API return data in json.
 
-The values available in the `properties` field of a resource can be found in the resource's official ARM documentation:
-- https://docs.microsoft.com/en-us/rest/api/azure/
+The values available in the `properties` field of a resource can be found in the resource's official ARM documentation: https://docs.microsoft.com/en-us/rest/api/azure/
 
 #### About networking
 
