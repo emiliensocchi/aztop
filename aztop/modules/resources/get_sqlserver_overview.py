@@ -13,7 +13,7 @@ class Module():
             • Whether the SQL Server is accessible from selected networks (IP ranges, VNet and subnet names are provided)
             • Whether the SQL Server is exposed to private endpoints (VNet, subnet names and private IP addresses are provided)
             • The minimum TLS version required for HTTPS connections to the SQL Server
-            • Which data-plane authorization model the SQL Server is using (Azure AD or SQL credentials)
+            • Which data-plane authorization model the SQL Server is using (Entra ID or SQL credentials)
 
         Note:
             • The retrieval of network data is implemented manually here, due to the externalization of firewall and VNet data
@@ -101,7 +101,7 @@ class Module():
                     if sql_server_property_name in sql_server_properties:
                         sql_server_admin_properties = sql_server_properties[sql_server_property_name]
                         sql_server_property_name = 'azureADOnlyAuthentication'
-                        sql_server_data_plane_authz_mode = 'Azure AD' if (sql_server_property_name in sql_server_admin_properties and sql_server_admin_properties[sql_server_property_name]) else 'SQL credentials'
+                        sql_server_data_plane_authz_mode = 'Entra ID' if (sql_server_property_name in sql_server_admin_properties and sql_server_admin_properties[sql_server_property_name]) else 'SQL credentials'
                     else:
                         sql_server_data_plane_authz_mode = 'SQL credentials'
 

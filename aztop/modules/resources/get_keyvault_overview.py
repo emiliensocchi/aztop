@@ -12,7 +12,7 @@ class Module():
             • Whether the Key Vault is exposed to All networks or Selected networks
                 - For Selected networks, IP ranges, VNet and subnet names are provided
             • Whether the Key Vault is exposed to private endpoints (VNet, subnet names and private IP addresses are provided)
-            • Which Data-plane authorization model the Key Vault is using (Azure AD or Vault access policies)
+            • Which Data-plane authorization model the Key Vault is using (Entra ID or Vault access policies)
             • Whether Purge protection is enabled
 
     """
@@ -86,7 +86,7 @@ class Module():
                     keyvault_property_name = 'enableRbacAuthorization'
 
                     if keyvault_property_name in keyvault_properties:
-                        keyvault_data_plane_authz_mode = 'Azure AD' if  keyvault_properties[keyvault_property_name] else 'Vault access policies'
+                        keyvault_data_plane_authz_mode = 'Entra ID' if  keyvault_properties[keyvault_property_name] else 'Vault access policies'
                     else:
                         # Support for older Key Vaults
                         keyvault_data_plane_authz_mode = 'Vault access policies'

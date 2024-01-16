@@ -13,7 +13,7 @@ class Module():
                 - For Selected networks, IP ranges, VNet and subnet names are provided
             • Whether the Namespace exposes its Event Hubs to private endpoints (VNet, subnet names and private IP addresses are provided)
             • The minimum TLS version required for HTTPS connections to the Event Hubs Namespace
-            • Which Data-plane authorization model the Event Hubs Namespace is using (Azure AD or Shared Access Signature - SAS)
+            • Which Data-plane authorization model the Event Hubs Namespace is using (Entra ID or Shared Access Signature - SAS)
 
     """
     _output_file_path = str()
@@ -91,7 +91,7 @@ class Module():
 
                     #-- Gather data-plane authorization data
                     eventhub_property_name = 'disableLocalAuth'
-                    eventhub_data_plane_authz_mode = 'Azure AD' if eventhub_properties[eventhub_property_name] else 'Shared Access Signature (SAS)'
+                    eventhub_data_plane_authz_mode = 'Entra ID' if eventhub_properties[eventhub_property_name] else 'Shared Access Signature (SAS)'
 
                     #-- Gather networking data
                     property_name = 'publicNetworkAccess'

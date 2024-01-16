@@ -24,7 +24,7 @@ class Module():
                 - Whether soft delete is enabled for containers and how long
                 - Whether soft delete is enabled for individual blobs and how long
                 - Whether immutability is enabled 
-            • Which data-plane authorization model the Storage Account is using (Azure AD or Shared Access Signature - SAS)
+            • Which data-plane authorization model the Storage Account is using (Entra ID or Shared Access Signature - SAS)
 
     """
     _output_file_path = str()
@@ -205,7 +205,7 @@ class Module():
                         storage_account_propery_name = 'allowSharedKeyAccess'
 
                         if storage_account_propery_name in storage_account_properties:
-                            storage_account_data_plane_authz_mode = 'Shared Access Signatures (SAS)' if storage_account_properties[storage_account_propery_name] else 'Azure AD'
+                            storage_account_data_plane_authz_mode = 'Shared Access Signatures (SAS)' if storage_account_properties[storage_account_propery_name] else 'Entra ID'
                         else:
                             storage_account_data_plane_authz_mode = 'Shared Access Signatures (SAS)'
 

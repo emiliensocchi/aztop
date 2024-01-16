@@ -12,7 +12,7 @@ class Module():
             • Whether the Service Bus is exposed to All networks or Selected networks
                 - For Selected networks, IP ranges, VNet and subnet names are provided
             • Whether the Service Bus is exposed to private endpoints (VNet, subnet names and private IP addresses are provided)
-            • Which data-plane authorization model the Service Bus is using (Azure AD or Shared Access Signature - SAS)
+            • Which data-plane authorization model the Service Bus is using (Entra ID or Shared Access Signature - SAS)
 
     """
     _output_file_path = str()
@@ -85,7 +85,7 @@ class Module():
 
                     #-- Gather data-plane authorization data
                     property_name = 'disableLocalAuth'
-                    service_bus_data_plane_authz_mode = 'Azure AD' if service_bus_properties[property_name] else 'Shared Access Signatures (SAS)'
+                    service_bus_data_plane_authz_mode = 'Entra ID' if service_bus_properties[property_name] else 'Shared Access Signatures (SAS)'
 
                     #-- Gather networking data
                     property_name = 'publicNetworkAccess'
