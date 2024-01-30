@@ -16,7 +16,7 @@ jobs:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       with:
         source_directory: '.'
-        destination_directory: 'Tools/aztop'
+        destination_directory: 'aztop'
         destination_repo: 'emiliensocchi/azure-hunting'
         user_email: 'emilien.socchi@gmail.com'
         user_name: 'emiliensocchi'
