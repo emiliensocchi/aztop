@@ -156,8 +156,11 @@ def export_resource_overview_to_csv(output_file_path, column_names, resource_ove
                 network_restriction_name = 'Selected networks' if whitelisted_locations else 'All networks' if network_exposure['ispublic'] else 'Private'
                 resource_properties = list(resource_properties.values())
                 
-                if contains_a_list_property and list_property_first_element:
-                    resource_properties.insert(0, list_property_first_element)
+                if contains_a_list_property:
+                    if list_property_first_element:
+                        resource_properties.insert(0, list_property_first_element)
+                    else: 
+                        resource_properties.insert(0, '')
 
                 resource_properties.insert(0, network_restriction_name)
                 resource_properties.insert(0, resource_name)
@@ -181,8 +184,11 @@ def export_resource_overview_to_csv(output_file_path, column_names, resource_ove
                 # Resource with a simplified or no network exposure
                 resource_properties = list(resource_properties.values())
 
-                if contains_a_list_property and list_property_first_element:
-                    resource_properties.insert(0, list_property_first_element)
+                if contains_a_list_property:
+                    if list_property_first_element:
+                        resource_properties.insert(0, list_property_first_element)
+                    else: 
+                        resource_properties.insert(0, '')
 
                 resource_properties.insert(0, resource_name)
                 writer.writerow(resource_properties)
