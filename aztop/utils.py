@@ -94,7 +94,7 @@ def export_resource_overview_to_csv(output_file_path, column_names, resource_ove
             }
 
         Note: 
-            The passed resource overview has the following data structure for resources with a *simplified or no network exposure*:
+            The passed resource overview can have a special the following data structure for resources with a *simplified or no network exposure*:
             {
                 'resource-name-1':
                 {
@@ -110,10 +110,14 @@ def export_resource_overview_to_csv(output_file_path, column_names, resource_ove
                 },                 
                 {...}
             }
+
+        Note: 
+            Resource properties can also be lists, as long as their property name contains the substring 'list'
+          
         Args:
             output_file_path (str): full directory path to the csv file where data should be be exported
             column_names (list(str)): list of column names to be used for column headers
-            resource_overview (dict(dict(str, str))): resource overview to be exported
+            resource_overview (dict(dict(str, str/list))): resource overview to be exported
 
         Returns:
             None
@@ -126,26 +130,69 @@ def export_resource_overview_to_csv(output_file_path, column_names, resource_ove
         writer.writerow(column_names)
 
         for resource_name, resource_properties in resource_overview.items():
+            contains_a_list_property = False
+            list_property_elements = []
+            list_property_first_element = str()
+
+            if any('list' in resource_property_name for resource_property_name in resource_properties):
+                # Resource with a list property
+                contains_a_list_property = True
+                list_key = ''
+
+                for property in resource_properties:
+                    if 'list' in property:
+                        list_key = property
+                        break
+
+                list_property_elements = resource_properties.pop(list_key)
+
+                if list_property_elements:
+                    list_property_first_element = list_property_elements.pop(0)
+
             if 'network' in resource_properties:
                 # Resource with a standard network exposure
                 network_exposure = resource_properties.pop('network')
                 whitelisted_locations = network_exposure['whitelisted']
                 network_restriction_name = 'Selected networks' if whitelisted_locations else 'All networks' if network_exposure['ispublic'] else 'Private'
                 resource_properties = list(resource_properties.values())
+                
+                if contains_a_list_property and list_property_first_element:
+                    resource_properties.insert(0, list_property_first_element)
+
                 resource_properties.insert(0, network_restriction_name)
                 resource_properties.insert(0, resource_name)
                 writer.writerow(resource_properties)
 
-                whitelisted_location_row = [''] * len(resource_properties)
+                if contains_a_list_property:
+                    combined_row = [''] * len(resource_properties)
+                    longest_property = whitelisted_locations if len(whitelisted_locations) > len(list_property_elements) else list_property_elements
 
-                for whitelisted_location in whitelisted_locations:
-                    whitelisted_location_row[1] = whitelisted_location
-                    writer.writerow(whitelisted_location_row)
+                    for i in range(longest_property):
+                        combined_row[1] = whitelisted_locations[i] if len(whitelisted_locations) > i else ''
+                        combined_row[2] = list_property_elements[i] if len(list_property_elements) > i else ''
+                        writer.writerow(combined_row)
+                else:
+                    whitelisted_location_row = [''] * len(resource_properties)
+
+                    for whitelisted_location in whitelisted_locations:
+                        whitelisted_location_row[1] = whitelisted_location
+                        writer.writerow(whitelisted_location_row)
             else:
                 # Resource with a simplified or no network exposure
                 resource_properties = list(resource_properties.values())
+
+                if contains_a_list_property and list_property_first_element:
+                    resource_properties.insert(0, list_property_first_element)
+
                 resource_properties.insert(0, resource_name)
-                writer.writerow(resource_properties)                
+                writer.writerow(resource_properties)
+                
+                if contains_a_list_property:
+                    list_property_row = [''] * len(resource_properties)
+
+                    for list_property_element in list_property_elements:
+                        list_property_row[1] = list_property_element
+                        writer.writerow(list_property_row)         
 
 
 def get_all_subscriptions(access_token):
