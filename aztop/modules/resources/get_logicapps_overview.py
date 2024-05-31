@@ -115,7 +115,7 @@ class Module():
                             else:
                                 logicapp_actions_list.append(f"{action_name} (No/No)")
                     else:
-                        logicapp_actions.append('None')
+                        logicapp_actions_list.append('None')
 
                     #-- Gather network exposure for run history and Logic App triggers
                     logicapp_property_name = 'accessControl'
@@ -147,16 +147,20 @@ class Module():
                         if logicapp_property_name in logicapp_access_control:
                             logicapp_access_control_contents = logicapp_access_control[logicapp_property_name]
                             logicapp_property_name = 'allowedCallerIpAddresses'
-                            logicapp_allowed_caller_Ips = logicapp_access_control_contents[logicapp_property_name]
-                            
-                            whitelisted_ips = []
 
-                            for caller_ip in logicapp_allowed_caller_Ips:
-                                logicapp_property_name = 'addressRange'
-                                allowed_ip = caller_ip[logicapp_property_name]
-                                whitelisted_ips.append(allowed_ip)
+                            if logicapp_property_name in logicapp_access_control_contents:
+                                logicapp_allowed_caller_Ips = logicapp_access_control_contents[logicapp_property_name]
+                                
+                                whitelisted_ips = []
 
-                            logicapp_trigger_network_exposure = ", ".join(whitelisted_ips)
+                                for caller_ip in logicapp_allowed_caller_Ips:
+                                    logicapp_property_name = 'addressRange'
+                                    allowed_ip = caller_ip[logicapp_property_name]
+                                    whitelisted_ips.append(allowed_ip)
+
+                                logicapp_trigger_network_exposure = ", ".join(whitelisted_ips)
+                            else:
+                                logicapp_trigger_network_exposure = 'All networks'        
                         else:
                             logicapp_trigger_network_exposure = 'All networks'    
                     else:
@@ -171,9 +175,8 @@ class Module():
                     logicapp_overview[logicapp_name] = { 
                         'actionlist': logicapp_actions_list, 
                         'triggertype': logicapp_triggers,
-                        
-                        'runhistorynetworkexposure': logicapp_run_history_network_exposure,
                         'triggernetworkexposure': logicapp_trigger_network_exposure,
+                        'runhistorynetworkexposure': logicapp_run_history_network_exposure,
                         'accesspoint' : logicapp_access_point
                     }
 
