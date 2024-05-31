@@ -23,6 +23,8 @@ The tool is currently able to provide an overview of the following Azure resourc
 
 - Key Vaults
 
+- Logic Apps
+
 - PostgreSQL servers
 
 - Redis databases
