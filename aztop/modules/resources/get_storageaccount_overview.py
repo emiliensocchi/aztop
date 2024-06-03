@@ -67,7 +67,7 @@ class Module():
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
-            for subscription in subscriptions:
+            for subscription in subscriptions[:100]:
                 storage_accounts = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
                 api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
