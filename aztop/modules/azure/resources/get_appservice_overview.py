@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import progress.bar
@@ -53,18 +54,18 @@ class Module():
             os._exit(0)
         
         app_service_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                app_services = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
-                api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                app_services = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
                 for app_service in app_services:
                     spinner.next()  
-                    app_service_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, app_service, api_versions, spinner)
+                    app_service_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, app_service, api_versions, spinner)
 
                     if not app_service_content:
                         self._has_errors = True
@@ -98,7 +99,7 @@ class Module():
 
                     #-- Acquire App Service configuration
                     app_service_config_path = f"{app_service}/config"
-                    app_service_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, app_service_config_path, api_versions, spinner)
+                    app_service_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, app_service_config_path, api_versions, spinner)
 
                     if not app_service_content:
                         self._has_errors = True
@@ -169,7 +170,7 @@ class Module():
                         network_acls['ipRules'] = []
 
                     app_service_properties['networkAcls'] = network_acls
-                    app_service_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, app_service_properties, spinner)
+                    app_service_network_exposure = arm.get_resource_network_exposure(self._access_token, subscription, app_service_properties, spinner)
 
                     if app_service_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

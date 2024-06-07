@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import re
@@ -62,18 +63,18 @@ class Module():
             os._exit(0)
         
         storage_account_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                storage_accounts = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
-                api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                storage_accounts = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
                 for storage_account in storage_accounts:
                     spinner.next()
-                    storage_account_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account, api_versions, spinner)
+                    storage_account_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account, api_versions, spinner)
 
                     if not storage_account_content:
                         self._has_errors = True
@@ -135,8 +136,8 @@ class Module():
                     blob_service_container_path = '/blobServices/default/containers'
                     storage_account_containers_path = f"{storage_account}{blob_service_container_path}"
                     resource_type = f"{self._resource_type}/blobServices"
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                    containers = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_containers_path, api_versions, spinner)
+                    api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                    containers = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_containers_path, api_versions, spinner)
 
                     if containers:
                         # The Storage Account uses the Blob Service
@@ -147,7 +148,7 @@ class Module():
                         # Retrieving Blob Service properties
                         blob_service_path = '/blobServices/default'
                         storage_account_blob_service_path = f"{storage_account}{blob_service_path}"
-                        storage_account_blob_service = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_blob_service_path, api_versions, spinner)
+                        storage_account_blob_service = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_blob_service_path, api_versions, spinner)
 
                         if not storage_account_blob_service:
                             self._has_errors = True
@@ -278,8 +279,8 @@ class Module():
                         file_service_share_path = '/fileServices/default/shares'
                         storage_account_fileshares_path = f"{storage_account}{file_service_share_path}"
                         resource_type = f"{self._resource_type}/fileServices"
-                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                        fileshares = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_fileshares_path, api_versions, spinner)
+                        api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        fileshares = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_fileshares_path, api_versions, spinner)
 
                         if fileshares:
                             fileshares_keys = fileshares
@@ -293,8 +294,8 @@ class Module():
                         queue_service_share_path = '/queueServices/default/queues'
                         storage_account_queues_path = f"{storage_account}{queue_service_share_path}"
                         resource_type = f"{self._resource_type}/queueServices"
-                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                        queues = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_queues_path, api_versions, spinner)
+                        api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        queues = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_queues_path, api_versions, spinner)
 
                         if queues:
                             queues_keys = queues
@@ -308,8 +309,8 @@ class Module():
                         table_service_share_path = '/tableServices/default/tables'
                         storage_account_tables_path = f"{storage_account}{table_service_share_path}"
                         resource_type = f"{self._resource_type}/tableServices"
-                        api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
-                        tables = utils.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_tables_path, api_versions, spinner)
+                        api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, resource_type)
+                        tables = arm.get_resource_content_using_multiple_api_versions(self._access_token, storage_account_tables_path, api_versions, spinner)
 
                         if tables:
                             tables_keys = tables
@@ -320,7 +321,7 @@ class Module():
                                 storage_account_service_type = 'Table' if not storage_account_service_type else f"{storage_account_service_type}, Table"
 
                     #-- Gather networking data
-                    storage_account_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, storage_account_properties, spinner)
+                    storage_account_network_exposure = arm.get_resource_network_exposure(self._access_token, subscription, storage_account_properties, spinner)
 
                     if storage_account_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

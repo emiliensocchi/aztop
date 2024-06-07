@@ -1,3 +1,4 @@
+import arm
 import csv
 import os
 import utils
@@ -48,18 +49,18 @@ class Module():
             os._exit(0)
         
         nsg_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                nsgs = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                nsgs = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
 
                 for nsg in nsgs:
                     spinner.next()
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
-                    nsg_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, nsg, api_versions, spinner)
+                    api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                    nsg_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, nsg, api_versions, spinner)
 
                     if not nsg_content:
                         self._has_errors = True

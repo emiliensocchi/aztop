@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import progress.bar
@@ -50,21 +51,21 @@ class Module():
             os._exit(0)
         
         service_bus_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                service_buses = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
-                api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                service_buses = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
                 for service_bus in service_buses:
                     spinner.next()
                     networkrulesets_path = '/networkrulesets/default'
                     service_bus_networkrulesets_path = f"{service_bus}/{networkrulesets_path}"
-                    service_bus_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, service_bus, api_versions, spinner)
-                    service_bus_networkrulesets_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, service_bus_networkrulesets_path, api_versions, spinner)
+                    service_bus_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, service_bus, api_versions, spinner)
+                    service_bus_networkrulesets_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, service_bus_networkrulesets_path, api_versions, spinner)
 
                     if not service_bus_content or not service_bus_networkrulesets_content:
                         self._has_errors = True
@@ -95,7 +96,7 @@ class Module():
                     property_name = 'networkAcls'
                     service_bus_properties[property_name] = service_bus_networkrulesets_properties
 
-                    service_bus_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, service_bus_properties, spinner)
+                    service_bus_network_exposure = arm.get_resource_network_exposure(self._access_token, subscription, service_bus_properties, spinner)
 
                     if service_bus_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

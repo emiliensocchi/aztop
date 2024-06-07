@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import progress.bar
@@ -51,7 +52,7 @@ class Module():
             os._exit(0)
         
         postgresql_server_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
@@ -59,8 +60,8 @@ class Module():
             for subscription in subscriptions:
                 single_postgresql_server_path = f"{self._resource_type}/servers"
                 flexible_postgresql_server_path = f"{self._resource_type}/flexibleServers"
-                single_postgresql_servers = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, single_postgresql_server_path)
-                flexible_postgresql_servers = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, flexible_postgresql_server_path)
+                single_postgresql_servers = arm.get_resources_of_type_within_subscription(self._access_token, subscription, single_postgresql_server_path)
+                flexible_postgresql_servers = arm.get_resources_of_type_within_subscription(self._access_token, subscription, flexible_postgresql_server_path)
                 postgresql_servers = single_postgresql_servers + flexible_postgresql_servers
 
                 for postgresql_server in postgresql_servers:
@@ -70,8 +71,8 @@ class Module():
                     resource_provider = postgresql_server_splitted_path[1]
                     resource_type = postgresql_server_splitted_path[2]
                     resource_path = f"{resource_provider}/{resource_type}"
-                    api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, resource_path)
-                    postgresql_server_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server, api_versions, spinner)
+                    api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, resource_path)
+                    postgresql_server_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server, api_versions, spinner)
 
                     if not postgresql_server_content:
                         self._has_errors = True
@@ -108,7 +109,7 @@ class Module():
                     else:
                         # The PostgreSQL Server is flexible
                         postgresql_server_configuration_path = f"{postgresql_server}/configurations"
-                        postgresql_server_configuration_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_configuration_path, api_versions, spinner)
+                        postgresql_server_configuration_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_configuration_path, api_versions, spinner)
 
                         if not postgresql_server_configuration_content:
                             self._has_errors = True
@@ -148,7 +149,7 @@ class Module():
                     #-- Gather networking data
                     firewall_rules_path = '/firewallrules'
                     postgresql_server_firewall_rules_path = f"{postgresql_server}{firewall_rules_path}"
-                    postgresql_server_firewall_rules_properties = utils.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_firewall_rules_path, api_versions, spinner)
+                    postgresql_server_firewall_rules_properties = arm.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_firewall_rules_path, api_versions, spinner)
 
                     if not postgresql_server_firewall_rules_properties:
                         self._has_errors = True
@@ -161,7 +162,7 @@ class Module():
                     if is_simple_server:
                         vnet_rules_path = '/virtualNetworkRules'
                         postgresql_server_vnet_rules_path = f"{postgresql_server}{vnet_rules_path}"
-                        postgresql_server_vnet_rules_properties = utils.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_vnet_rules_path, api_versions, spinner)
+                        postgresql_server_vnet_rules_properties = arm.get_resource_content_using_multiple_api_versions(self._access_token, postgresql_server_vnet_rules_path, api_versions, spinner)
                     else:
                         # The PostgreSQL Server is flexible
                         property_name = 'network'
@@ -185,7 +186,7 @@ class Module():
                         utils.log_to_file(self._log_file_path, error_text)
                         continue
 
-                    postgresql_server_network_exposure = utils.get_database_server_network_exposure(self._access_token,subscription, postgresql_server_properties, postgresql_server_firewall_rules_properties, postgresql_server_vnet_rules_properties, spinner)
+                    postgresql_server_network_exposure = arm.get_database_server_network_exposure(self._access_token,subscription, postgresql_server_properties, postgresql_server_firewall_rules_properties, postgresql_server_vnet_rules_properties, spinner)
 
                     if postgresql_server_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

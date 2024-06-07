@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import progress.bar
@@ -57,18 +58,18 @@ class Module():
             os._exit(0)
         
         redis_database_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                redis_databases = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
-                api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                redis_databases = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
                 for redis_database in redis_databases:
                     spinner.next()
-                    redis_database_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, redis_database, api_versions, spinner)
+                    redis_database_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, redis_database, api_versions, spinner)
 
                     if not redis_database_content:
                         self._has_errors = True
@@ -96,7 +97,7 @@ class Module():
                     redis_database_minimum_tls_version = 'TLS 1.0 (unset)' if (not property_name in redis_database_properties) else f"TLS {redis_database_properties[property_name]}"
 
                     #-- Gather networking data
-                    redis_database_network_exposure = utils.get_resource_network_exposure(self._access_token, subscription, redis_database_properties, spinner)
+                    redis_database_network_exposure = arm.get_resource_network_exposure(self._access_token, subscription, redis_database_properties, spinner)
 
                     if redis_database_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

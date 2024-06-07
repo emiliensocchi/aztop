@@ -1,3 +1,4 @@
+import arm
 import os
 import utils
 import progress.bar
@@ -56,18 +57,18 @@ class Module():
             os._exit(0)
         
         sql_server_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                sql_servers = utils.get_all_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
-                api_versions = utils.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
+                sql_servers = arm.get_resources_of_type_within_subscription(self._access_token, subscription, self._resource_type)
+                api_versions = arm.get_api_version_for_resource_type(self._access_token, subscription, self._resource_type)
 
                 for sql_server in sql_servers:
                     spinner.next()
-                    sql_server_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, sql_server, api_versions, spinner)
+                    sql_server_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, sql_server, api_versions, spinner)
 
                     if not sql_server_content:
                         self._has_errors = True
@@ -108,7 +109,7 @@ class Module():
                     #-- Gather networking data
                     firewall_rules_path = '/firewallrules'
                     sql_server_firewall_rules_path = f"{sql_server}{firewall_rules_path}"
-                    sql_server_firewall_rules_properties = utils.get_resource_content_using_multiple_api_versions(self._access_token, sql_server_firewall_rules_path, api_versions, spinner)
+                    sql_server_firewall_rules_properties = arm.get_resource_content_using_multiple_api_versions(self._access_token, sql_server_firewall_rules_path, api_versions, spinner)
 
                     if not sql_server_firewall_rules_properties:
                         self._has_errors = True
@@ -118,7 +119,7 @@ class Module():
 
                     vnet_rules_path = '/virtualNetworkRules'
                     sql_server_vnet_rules_path = f"{sql_server}{vnet_rules_path}"
-                    sql_server_vnet_rules_properties = utils.get_resource_content_using_multiple_api_versions(self._access_token, sql_server_vnet_rules_path, api_versions, spinner)
+                    sql_server_vnet_rules_properties = arm.get_resource_content_using_multiple_api_versions(self._access_token, sql_server_vnet_rules_path, api_versions, spinner)
 
                     if not sql_server_vnet_rules_properties:
                         self._has_errors = True
@@ -126,7 +127,7 @@ class Module():
                         utils.log_to_file(self._log_file_path, error_text)
                         continue
                     
-                    sql_server_network_exposure = utils.get_database_server_network_exposure(self._access_token,subscription, sql_server_properties, sql_server_firewall_rules_properties, sql_server_vnet_rules_properties, spinner)
+                    sql_server_network_exposure = arm.get_database_server_network_exposure(self._access_token,subscription, sql_server_properties, sql_server_firewall_rules_properties, sql_server_vnet_rules_properties, spinner)
 
                     if sql_server_network_exposure == 'hidden':
                         # The resource attempted to be retrieved is managed by Microsoft

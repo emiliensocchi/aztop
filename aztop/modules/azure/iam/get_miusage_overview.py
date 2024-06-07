@@ -1,3 +1,4 @@
+import arm
 import csv
 import os
 import utils
@@ -51,14 +52,14 @@ class Module():
             os._exit(0)
         
         mi_assignment_overview = dict()
-        subscriptions = subscription_ids if subscription_ids else utils.get_all_subscriptions(self._access_token)
+        subscriptions = subscription_ids if subscription_ids else arm.get_subscriptions(self._access_token)
         progress_text = 'Processing subscriptions'
         spinner = progress.spinner.Spinner(progress_text)
 
         with progress.bar.Bar(progress_text, max = len(subscriptions)) as bar:
             for subscription in subscriptions:
-                resource_providers_with_api_versions = utils.get_all_resource_types_with_associated_api_versions_within_subscription(self._access_token, subscription)
-                resources = utils.get_all_resources_within_subscription(self._access_token, subscription)
+                resource_providers_with_api_versions = arm.get_resource_types_with_associated_api_versions_within_subscription(self._access_token, subscription)
+                resources = arm.get_resources_within_subscription(self._access_token, subscription)
 
                 for resource in resources:
                     spinner.next()
@@ -79,7 +80,7 @@ class Module():
                         url_encoded_hashmark = '%23'
                         resource = resource.replace('#', url_encoded_hashmark)
                     
-                    resource_content = utils.get_resource_content_using_multiple_api_versions(self._access_token, resource, api_versions, spinner)
+                    resource_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, resource, api_versions, spinner)
 
                     if not resource_content:
                         self._has_errors = True
