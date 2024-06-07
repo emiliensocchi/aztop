@@ -9,6 +9,12 @@ aztop allows visualizing multiple aspects of an Azure environment, by gathering 
 
 CSV files can then be visualized as tables to acquire a comprehensive overview of large environements in no time.
 
+### Supported Entra ID resources
+
+The tool is currently able to provide an overview of the following Entra ID resources:
+
+- Application permissions granted to service principals
+
 ### Supported Azure resources
 
 The tool is currently able to provide an overview of the following Azure resources:
@@ -50,7 +56,9 @@ aztop is also able to provide the following kinds of overviews through dedicated
 ## Prerequisite
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
-- An Entra ID user with Contributor access to the subscription(s) that should be analyzed
+- An Entra ID user with:
+  - Global Reader to Entra ID
+  - Reader access to the subscription(s) that should be analyzed
 
 
 ## Installation 
@@ -72,7 +80,7 @@ pipenv install -r requirements.txt
 
 ## Usage
 
-aztop is an interactive tool. Authentication is therefore performed interactively via a web browser unless an access token is passed manually to the tool.
+aztop is an interactive tool. Authentication is therefore performed interactively via a web browser, unless an access token is passed manually to the tool.
 
 ### Using a member account
 
@@ -97,7 +105,9 @@ python aztop/aztop.py -tid <guid-of-tenant-to-analyze>
 ```shell
 python aztop/aztop.py -arm <access-token-value>
 ```
-
+```shell
+python aztop/aztop.py -graph <access-token-value>
+```
 
 There are situations where the need to pass an access token manually to aztop might be useful. 
 
@@ -155,19 +165,6 @@ When rate limiting kicks in, you will see the following string appearing next to
 More info about rate limiting in ARM: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
 
 
-### Out of Memory issue on WSL
-
-**Solution: Avoid using WSL for scanning large environments**
-
-Using the Windows Subsystem for Linux (WSL) to scan very large environments several times in a row can sometimes lead the underlying WSL VM to run out of memory and kill the Python process running aztop.
-
-The error thrown when this occurs has usually nothing to do with memory consumption, but the most common error is as follows:
-
-`Max retries exceeded with url Caused by NewConnectionError Failed to establish a new connection: [Errno -3] Temporary failure in name resolution`
-
-The simplest solution is to run aztop natively on the Windows machine, instead of using WSL.
-
-
 ## Contributing to the project
 
 aztop aims to be a modular framework, where new modules can be plugged into the tool easily. To get started with the developement of a new module, the below procedure is recommended.
@@ -176,39 +173,41 @@ aztop aims to be a modular framework, where new modules can be plugged into the 
 
 Check if the `aztop/modules` directory contains a category that will suit your new module.
 
-For example, the "resources" category suits modules providing a complete overview of specific types of resources, while the "iam" category provides overviews of IAM configurations.
+For example, the "azure/resources" category suits modules providing a complete overview of specific types of resources, while the "azure/networking" category provides overviews of network configurations.
 
-In case no category fits the purpose of your future module, feel free to create a new category by simply creating a new subdirectory of `aztop/modules/` with a self-explanatory name and <u>without</u> space.
+In case no category fits the purpose of your future module, feel free to create a new category by simply creating a new subdirectory of `aztop/modules/entra` or `aztop/modules/azure` with a self-explanatory name and <u>without</u> space.
 
-* Example: `aztop/modules/secret-management`
+* Example: `aztop/modules/entra/conditional-access`
 
-Note that most modules will suit the "resources" category.
+Note that most Azure modules will suit the "resources" category.
 
 ### Step 2: Move the module template to the correct category
 
 Copy the `aztop/template/module_template.py` file to the category of your choice and rename it using the following format `<get-[purpose]-overview.py>`.
 
-* Example: `aztop/modules/resources/get-apim-overview.py`
+* Example: `aztop/modules/azure/resources/get-apim-overview.py`
 
-Note that the above example is for a module providing a complete overview of API Management resources.
+Note that the above example is for a module providing a complete overview of API Management (APMI) resources.
 
 ### Step 3: Make yourself familiar with the module template
 
 At this point, the source code of the module template should be self-explanatory.
 
-Start by refactoring the code with the name of the resource processed by your module, as explained in the description of the `Module()` class within the the template.
+Start by refactoring the code with the name of the resource processed by your module, as explained in the description of the `Module()` class within the template.
 
 #### General guidelines
 
 The main part of a resource's configuration is located in its `properties` field. The creation of a new modules consists therefore of parsing the results from that field into a data structure that can be exported to the CSV format.
 
-Note that all endpoints in the ARM API return data in json.
+Note that all endpoints in the MS Graph and ARM APIs return data in json.
 
-The values available in the `properties` field of a resource can be found in the resource's official ARM documentation: https://docs.microsoft.com/en-us/rest/api/azure/
+The values available in the `properties` field of an Entra ID or Azure resource can be found in the resource's official documentation for Microsoft Graph or ARM: 
+- https://docs.microsoft.com/en-us/rest/api/azure/
+- https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0
 
 #### About networking
 
-The retrievial of network information is already taken care of by the module template.
+The retrievial of Azure network information is already taken care of by the module template.
 ARM APIs tend however to be inconsistent. In case, the network information of the resource processed by your module is formatted and/or located in an uncommon place, you will most likely need to implement that part yourself.
 
-Request throttling that may occur when retrieving the content of a resource via its resource provider is also taken care of by the module template (see the `aztop/utils.py/get_resource_content_using_multiple_api_versions()` function for more info on how this is hanlded). 
+Request throttling that may occur when retrieving the content of a resource via its resource provider is also taken care of by the module template (see the `aztop/arm.py/get_resource_content_using_multiple_api_versions()` function for more info on how this is hanlded). 
