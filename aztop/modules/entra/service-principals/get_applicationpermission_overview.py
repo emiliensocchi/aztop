@@ -7,10 +7,13 @@ import progress.bar
 
 class Module():
     """
-        Module providing an overview of the application permissions granted to all Service Principals (SPs) in the tenant (excluding Managed Identities).
+        Module providing an overview of the service principals in a tenant with their associated granted application permissions.
 
-        Provides the following information:
-            • Granted application permissions per resource
+        Provides the following information for each service principal:
+            • The type of service principal
+            • The resource(s) for which the permissions are granted for
+            • The list of granted application permission for each resource
+            • Whether a permission might be sensitive
 
     """
     _output_file_name = str()
