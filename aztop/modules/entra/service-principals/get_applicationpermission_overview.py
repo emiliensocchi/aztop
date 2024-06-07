@@ -98,7 +98,7 @@ class Module():
                     list_property_row = [''] * len(column_names)
 
                     for permission in permissions:
-                        permission_sensitivity='🔥' if sensitive_permission in first_permission.lower() else ''
+                        permission_sensitivity='🔥' if sensitive_permission in permission.lower() else ''
                         list_property_row[1] = service_principal_type
                         list_property_row[2] = resource_name
                         list_property_row[3] = permission
