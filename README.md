@@ -6,11 +6,11 @@ Simple and extensible framework to acquire a quick and comprehensive overview of
 
 ## Overview
 
-[More examples](assets/images/)
+See [here](assets/images/) for more examples.
+
+Example wit SQL Servers:
 
 ![AZTOP output example with SQL Servers](assets/images/03_example_sqlservers_output.png)
-
-![AZTOP output example with Storage Accounts](assets/images/04_example_storageaccounts_output.png)
 
 aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
 
