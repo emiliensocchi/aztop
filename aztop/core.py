@@ -31,7 +31,20 @@ class ModuleLoader():
         Note:
             Illustration of the data structure used for the '_modules' attribute:
                 { 
-                    'modules': 
+                    'entra': 
+                        { 
+                            '<module_category_1>': 
+                                { 
+                                    '<module_1_name': <module.object>,
+                                    '<module_2_name>': <module.object>
+                                },
+                            'service-principals': 
+                                { 
+                                    'module1': <module.object>,
+                                    'module2': <module.object> 
+                                } 
+                        },
+                    'azure': 
                         { 
                             '<module_category_1>': 
                                 { 
@@ -48,34 +61,45 @@ class ModuleLoader():
 
     """
     _display_name = str()
+    _entra_modules_dir_name = str()
+    _azure_modules_dir_name = str()
     _modules_dir_name = str()
     _modules = { str(): dict() }
 
 
     def __init__(self):
         self._display_name = 'aztop'
+        self._entra_modules_dir_name = 'entra'
+        self._azure_modules_dir_name = 'azure'
         self._modules_dir_name = 'modules'
-        self._modules = { self._modules_dir_name: dict() }
+        self._modules = { self._entra_modules_dir_name: dict(), self._azure_modules_dir_name: dict(), }
 
         #-- Get all subdirectories of the main module directory
         root_package_path = os.path.dirname(os.path.realpath(__file__))
         modules_package_path = os.path.join(root_package_path, self._modules_dir_name) 
-        module_categories_paths = [ f.path for f in os.scandir(modules_package_path) if f.is_dir() ]
-        sorted_module_categories_paths = sorted(module_categories_paths)
+        modules_entra_path = os.path.join(modules_package_path, self._entra_modules_dir_name) 
+        modules_azure_path = os.path.join(modules_package_path, self._azure_modules_dir_name) 
+
+        entra_module_categories_paths = [ f.path for f in os.scandir(modules_entra_path) if f.is_dir() ]
+        azure_module_categories_paths = [ f.path for f in os.scandir(modules_azure_path) if f.is_dir() ]
+        sorted_entra_module_categories_paths = sorted(entra_module_categories_paths)
+        sorted_azure_module_categories_paths = sorted(azure_module_categories_paths)
+        all_sorted_module_categories_paths = sorted_entra_module_categories_paths + sorted_azure_module_categories_paths
 
         #-- Import all modules from each directory into a data structure
-        for path_to_module_category in sorted_module_categories_paths:
+        for path_to_module_category in all_sorted_module_categories_paths:
             module_paths = [ f.path for f in os.scandir(path_to_module_category) if f.is_file() ]
             sorted_module_paths = sorted(module_paths)
 
             for path_to_module in sorted_module_paths:
-                splited_path = path_to_module.rsplit('/', maxsplit = 3) if os.name == 'posix' else path_to_module.rsplit('\\', maxsplit = 3) # e.g. /home/path/to/package/modules/modulecategory1/module1
-                module_root_dir = splited_path[1]                                            # e.g. modules
-                module_category = splited_path[2]                                            # e.g. modulecategory1
-                module_name = splited_path[3].split('.')[0]                                  # e.g. module1
-                full_module_name = '.'.join([module_root_dir, module_category, module_name]) # e.g. modules.modulecategory1.module1
+                splited_path = path_to_module.rsplit('/', maxsplit = 4) if os.name == 'posix' else path_to_module.rsplit('\\', maxsplit = 4) # e.g. /home/path/to/package/modules/modulecategory1/module1
+                module_root_dir = splited_path[1]                                                           # e.g. modules
+                module_type = splited_path[2]                                                               # e.g. entra
+                module_category = splited_path[3]                                                           # e.g. modulecategory1
+                module_name = splited_path[4].split('.')[0]                                                 # e.g. module1
+                full_module_name = '.'.join([module_root_dir, module_type, module_category, module_name])   # e.g. modules.modulecategory1.module1
 
-                modules_dict = self._modules[module_root_dir]
+                modules_dict = self._modules[module_type]
                                     
                 if module_category not in modules_dict:
                     modules_dict[module_category] = dict()
@@ -218,6 +242,12 @@ class ModuleLoader():
         )
 
         parser.add_argument(
+            '-graph',
+            '--graph-access-token',
+            help = 'A valid access token issued for the MS Graph API'
+        )
+
+        parser.add_argument(
             '-tid',
             '--tenant-id',
             help = 'The id of the tenant to analyze (required if using a guest account)'
@@ -326,7 +356,7 @@ class ModuleLoader():
             with open(token_file_path, 'r') as file:
                 tenant_ids = json.load(file)
     
-                if tenant_id  and tenant_id in tenant_ids:
+                if tenant_id and tenant_id in tenant_ids:
                     # Some token for the passed tenant has been acquired previously
                     loaded_tokens = tenant_ids[tenant_id]
 
@@ -352,7 +382,7 @@ class ModuleLoader():
                                         # The token issued for ARM is definitely invalid (expired, wrong format, etc.)
                                         has_token_expired = True
                                 else:
-                                    # The token is not issued for ARM and is invalid (expired, wrong format, etc.)
+                                    # The token is invalid (expired, wrong format, etc.)
                                     has_token_expired = True
 
                             if not has_token_expired:
@@ -396,6 +426,40 @@ class ModuleLoader():
         return access_token
 
 
+    def get_graph_access_token_via_auth_code_flow(self, tenant_id):
+        """
+            Verifies whether a valid access token issued for the Microsoft Graph API exists for the passed tenant and is still valid in the cache, 
+            and retrieves a new access token using the interactive authorization code flow otherwise.
+
+            Args:
+                tenant_id (str): the id of the tenant to acquire an ARM access token for
+
+            Note:
+                https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
+
+            Returns:
+                str: valid access token upon successful authentication. None otherwise
+
+        """
+        access_token = str()
+        token_scope = 'graph'
+        token_type = 'access'
+        cached_token = self.get_cached_token(tenant_id, token_scope, token_type)
+
+        if cached_token:
+            access_token = cached_token
+        else:
+            # No access token for MS Graph has been acquired previously for the passed tenant or it has expired
+            scope = f"{GRAPH_BASEURL}/{DEFAULT_SCOPE}"
+            access_token_obj = azure.identity.InteractiveBrowserCredential().get_token(scope, tenant_id = tenant_id, timeout = 30)
+            access_token = access_token_obj.token if access_token_obj else None
+
+            if access_token:
+                self.export_token_to_file(tenant_id, token_scope, token_type, access_token)
+
+        return access_token
+
+
     def run(self):
         """
             Starts the interactive menu interface and executes the selected module upon selection.
@@ -410,6 +474,7 @@ class ModuleLoader():
         #-- Validate input arguments
         args = self.validate_input()
         passed_arm_access_token = args.arm_access_token
+        passed_graph_access_token = args.graph_access_token
         passed_tenant_id = args.tenant_id
         subscription_ids = args.subscription_ids
 
@@ -423,7 +488,20 @@ class ModuleLoader():
                 self.export_token_to_file(passed_tenant_id, token_scope, token_type, passed_arm_access_token)
             except:
                 # The passed token has expired or is corrupted
-                print ('[!] The passed access token has either expired or is in the wrong format')
+                print ('[!] The passed ARM access token has either expired or is in the wrong format')
+                os._exit(0)
+
+        if passed_graph_access_token:
+            # An access token for the MS Graph API has been passed manually
+            try:
+                decoded_token = jwt.decode(passed_graph_access_token, options = {"verify_signature": False, "verify_aud": False})
+                passed_tenant_id = decoded_token['tid']
+                token_scope = 'graph'
+                token_type = 'access'
+                self.export_token_to_file(passed_tenant_id, token_scope, token_type, passed_graph_access_token)
+            except:
+                # The passed token has expired or is corrupted
+                print ('[!] The passed Graph access token has either expired or is in the wrong format')
                 os._exit(0)
 
         if subscription_ids:
@@ -436,55 +514,68 @@ class ModuleLoader():
                     print ('[!] The passed list is not a comma-separated list of subscription ids')
                     os._exit(0)
 
-        modules = self._modules[self._modules_dir_name]
-        module_categories = list(modules.keys())
+        modules = self._modules
+        module_types = list(modules.keys())
         highlighted_text_rgb_color = [0, 137, 214]
 
         #-- Display interactive menu until exit
         while True:
-            #-- Display module categories
+            #-- Display module types
             title_text = 'Select a category to get overview of:'
             exit_text = 'exit'
-            selected_module_category = self.print_menu(title_text, module_categories, exit_text)
+            selected_module_type = self.print_menu(title_text, module_types, exit_text)
 
-            if selected_module_category is None:
+            if selected_module_type is None:
                 # Exit has been selected
                 break
 
-            #-- Display modules within the selected category
-            highlighted_selected_module_category = self.color_text(highlighted_text_rgb_color, selected_module_category)
-            title_text = f"Get overview of: {highlighted_selected_module_category}"
-            exit_text = 'back'
-            all_text = 'get_all_overviews'
-            modules_to_display = list(modules[selected_module_category].keys())
-            modules_to_display.append(all_text)
-            selected_module_name = self.print_menu(title_text, modules_to_display, exit_text)
+            while True:
+                #-- Display module categories
+                title_text = 'Select a category to get overview of:'
+                exit_text = 'back'
+                module_categories = list(modules[selected_module_type].keys())
+                selected_module_category = self.print_menu(title_text, module_categories, exit_text)
 
-            if selected_module_name is None:
-                # Back has been selected
-                continue
+                if selected_module_category is None:
+                    # Back has been selected
+                    break
 
-            elif selected_module_name is all_text:
-                # The execution of all modules within the category has been selected
-                modules_to_execute = list(modules[selected_module_category].keys())
+                #-- Display modules within the selected category
+                highlighted_selected_module_category = self.color_text(highlighted_text_rgb_color, selected_module_category)
+                title_text = f"Get overview of: {highlighted_selected_module_category}"
+                exit_text = 'back'
+                all_text = 'get_all_overviews'
+                modules_to_display = list(modules[selected_module_type][selected_module_category].keys())
+                modules_to_display.append(all_text)
+                selected_module_name = self.print_menu(title_text, modules_to_display, exit_text)
+
+                if selected_module_name is None:
+                    # Back has been selected
+                    continue
+
+                elif selected_module_name is all_text:
+                    # The execution of all modules within the category has been selected
+                    modules_to_execute = list(modules[selected_module_type][selected_module_category].keys())
+                    self.clear_screen()
+                    arm_access_token = self.get_arm_access_token_via_auth_code_flow(passed_tenant_id)
+
+                    for module_to_execute in modules_to_execute:
+                        #-- Execute all modules
+                        highlighted_module_to_execute_name = self.color_text(highlighted_text_rgb_color, module_to_execute)
+                        print (f"Executing module: {highlighted_module_to_execute_name}\n")
+                        module_object = modules[selected_module_type][selected_module_category][module_to_execute]
+                        module_object.exec(arm_access_token, subscription_ids)
+                        print ("\n\n")
+
+                    return
+
+                #-- Execute the selected module
+                highlighted_selected_module_name = self.color_text(highlighted_text_rgb_color, selected_module_name)
+                module_object = modules[selected_module_type][selected_module_category][selected_module_name]
                 self.clear_screen()
-                arm_access_token = self.get_arm_access_token_via_auth_code_flow(passed_tenant_id)
+                print (f"Executing module: {highlighted_selected_module_name}\n")
 
-                for module_to_execute in modules_to_execute:
-                    #-- Execute all modules
-                    highlighted_module_to_execute_name = self.color_text(highlighted_text_rgb_color, module_to_execute)
-                    print (f"Executing module: {highlighted_module_to_execute_name}\n")
-                    module_object = modules[selected_module_category][module_to_execute]
-                    module_object.exec(arm_access_token, subscription_ids)
-                    print ("\n\n")
+                access_token = self.get_graph_access_token_via_auth_code_flow(passed_tenant_id) if selected_module_type == self._entra_modules_dir_name else self.get_arm_access_token_via_auth_code_flow(passed_tenant_id)
 
-                break
-
-            #-- Execute the selected module
-            highlighted_selected_module_name = self.color_text(highlighted_text_rgb_color, selected_module_name)
-            module_object = modules[selected_module_category][selected_module_name]
-            self.clear_screen()
-            print (f"Executing module: {highlighted_selected_module_name}\n")
-            arm_access_token = self.get_arm_access_token_via_auth_code_flow(passed_tenant_id)
-            module_object.exec(arm_access_token, subscription_ids)
-            break
+                module_object.exec(access_token, subscription_ids)
+                return
