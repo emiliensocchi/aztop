@@ -2,15 +2,15 @@
 
 Simple and extensible framework to acquire a quick and comprehensive overview of an Azure tenant.
 
-![AZTOP logo](https://github.com/emiliensocchi/aztop/assets/images/00_aztop_logo.jpg)
+![AZTOP logo](https://github.com/emiliensocchi/aztop/tree/main/assets/images/00_aztop_logo.jpg)
 
 ## Overview
 
-[More examples](https://github.com/emiliensocchi/aztop/assets/images/)
+[More examples](https://github.com/emiliensocchi/aztop/tree/main/assets/images/)
 
-![AZTOP output example with SQL Servers](https://github.com/emiliensocchi/aztop/assets/images/03_example_sqlservers_output.png)
+![AZTOP output example with SQL Servers](https://github.com/emiliensocchi/aztop/tree/main/assets/images/03_example_sqlservers_output.png)
 
-![AZTOP output example with Storage Accounts](https://github.com/emiliensocchi/aztop/assets/images/04_example_storageaccounts_output.png)
+![AZTOP output example with Storage Accounts](https://github.com/emiliensocchi/aztop/tree/main/assets/images/04_example_storageaccounts_output.png)
 
 aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
 
