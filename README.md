@@ -18,13 +18,9 @@ CSV files can then be visualized as tables to acquire a comprehensive overview o
 
 ### Supported Entra ID resources
 
-The tool is currently able to provide an overview of the following Entra ID resources:
-
 - Application permissions granted to service principals
 
 ### Supported Azure resources
-
-The tool is currently able to provide an overview of the following Azure resources:
 
 - Azure Container Registry (ACR)
 
@@ -50,8 +46,6 @@ The tool is currently able to provide an overview of the following Azure resourc
 
 
 ### Other supported overviews
-
-aztop is also able to provide the following kinds of overviews through dedicated modules:
 
 - Overview of all user- and system-assigned Managed Identity (MI) with their associated consumer(s)
 
@@ -87,7 +81,7 @@ pipenv install -r requirements.txt
 
 ## Usage
 
-aztop is an interactive tool. Authentication is therefore performed interactively via a web browser, unless an access token is passed manually to the tool.
+aztop is an interactive tool. Authentication is therefore performed interactively via a web browser, unless an access token is passed manually.
 
 ### Using a member account
 
