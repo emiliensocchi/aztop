@@ -99,7 +99,7 @@ def get_resources_of_type_within_subscription(access_token, subscription_id, res
     if response.status_code != 200:
         utils.handle_http_error(response)
 
-    resources = response['value']
+    resources = response.json()['value']
     resource_paths = []
 
     for resource in resources:
