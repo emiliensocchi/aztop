@@ -6,12 +6,6 @@ Simple and extensible framework to acquire a quick and comprehensive overview of
 
 ## Overview
 
-See [here](assets/images/) for more examples.
-
-Example wit SQL Servers:
-
-![AZTOP output example with SQL Servers](assets/images/03_example_sqlservers_output.png)
-
 aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
 
 CSV files can then be visualized as tables to acquire a comprehensive overview of large environements in no time.
@@ -53,13 +47,27 @@ CSV files can then be visualized as tables to acquire a comprehensive overview o
 
 - Overview of all hostnames handled by all Load Balancers
 
+## Screenshots
+
+![AZTOP's navigation menu](assets/images/01_example_menu.png)
+
+![AZTOP running](assets/images/02_example_running.png)
+
+### Example output for: SQL Servers
+
+![AZTOP output example with SQL Servers](assets/images/03_example_sqlservers_output.png)
+
+### Example output for: Storage Accounts
+
+![AZTOP output example with Storage Accounts](assets/images/04_example_storageaccounts_output.png)
+
 
 ## Prerequisite
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
 - An Entra ID user with:
-  - Global Reader to Entra ID
-  - Reader access to the subscription(s) that should be analyzed
+  - Global Reader to Entra ID (for entra modules)
+  - Reader access to the subscription(s) that should be analyzed (for azure modules)
 
 
 ## Installation 
