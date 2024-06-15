@@ -226,3 +226,7 @@ def handle_http_error(http_response):
     if error_code in invalid_subscription_error_code_values:
         print (f"FATAL ERROR: The passed subscription is invalid")
         os._exit(0)  
+
+    if error_code == 'InternalServerError':
+        print (f"FATAL ERROR: Azure APIs are experiencing problems")
+        os._exit(0)  
