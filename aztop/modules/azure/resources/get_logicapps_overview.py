@@ -77,6 +77,7 @@ class Module():
                     logicapp_triggers = str()
                     logicapp_trigger_network_exposure = str()
                     logicapp_run_history_network_exposure = str()
+                    logicapp_runs = str()
                     logicapp_actions_list = []
                     logicapp_access_point = str()
 
@@ -162,6 +163,11 @@ class Module():
                     else:
                         logicapp_actions_list.append('')
 
+                    #-- Gather the number of run histories
+                    logicapp_history = logicapp + '/runs'
+                    logicapp_history_content = arm.get_resource_content_using_multiple_api_versions(self._access_token, logicapp_history, api_versions, spinner)
+                    logicapp_runs = str(len(logicapp_history_content['value']))
+
                     #-- Gather network exposure for run history and Logic App triggers
                     logicapp_property_name = 'accessControl'
 
@@ -223,6 +229,7 @@ class Module():
                         'actionlist': logicapp_actions_list, 
                         'triggertype': logicapp_triggers,
                         'triggernetworkexposure': logicapp_trigger_network_exposure,
+                        'numberofruns': logicapp_runs,
                         'runhistorynetworkexposure': logicapp_run_history_network_exposure,
                         'accesspoint' : logicapp_access_point
                     }
@@ -234,9 +241,10 @@ class Module():
         column_2 = 'Actions (secure input/ secure output)'
         column_3 = 'Trigger(s)'
         column_4 = 'Allow triggering from'
-        column_5 = 'Allow access to run history from'
-        column_6 = 'Access point'
-        column_names = [column_1, column_2, column_3, column_4, column_5, column_6]
+        column_5 = 'Number of runs'
+        column_6 = 'Allow access to run history from'
+        column_7 = 'Access point'
+        column_names = [column_1, column_2, column_3, column_4, column_5, column_6, column_7]
         
         utils.export_resource_overview_to_csv(self._output_file_path, column_names, logicapp_overview)
 
