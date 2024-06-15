@@ -209,12 +209,13 @@ def handle_http_error(http_response):
     token_expired_error = 'the token is expired'
     token_invalid_audience_error = 'invalid audience'
     invalid_subscription_error_code_values = ['InvalidSubscriptionId', 'SubscriptionNotFound']
+    invalid_token_error_code_value = ['ExpiredAuthenticationToken']
 
     error = json.loads(http_response.text)['error']
     error_code = error['code'].lower()
     error_message = error['message'].lower()
 
-    if token_expired_error in error_message:
+    if error_code in invalid_token_error_code_value or token_expired_error in error_message:
         print ('FATAL ERROR: The provided token has expired')
         os._exit(0)
 
