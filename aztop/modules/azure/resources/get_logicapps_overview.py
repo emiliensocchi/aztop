@@ -90,33 +90,77 @@ class Module():
 
                     if logicapp_property_name in logicapp_definition:
                         logicapp_triggers = logicapp_definition[logicapp_property_name]
-                        logicapp_triggers = ', '.join(list(logicapp_triggers))
+                        logicapp_triggers = ', '.join(list(logicapp_triggers.keys()))
+                        logicapp_triggers = logicapp_triggers.replace('manual', 'Request')
                     else:
-                        logicapp_triggers = 'None'
+                        logicapp_triggers = ''
 
                     #-- Gather actions and secure input/output configuration
                     logicapp_property_name = 'actions'
 
                     if logicapp_property_name in logicapp_definition:
-                        logicapp_actions = logicapp_definition[logicapp_property_name]
+                        logicapp_steps = logicapp_definition[logicapp_property_name]
 
-                        for action_name in logicapp_actions:
-                            logicapp_action_content = logicapp_actions[action_name]
-                            logicapp_property_name_1 = 'runtimeConfiguration'
-                            logicapp_property_name_2 = 'properties'
+                        for step_name in logicapp_steps:
+                            logicapp_property_name = 'actions'
+                            logicapp_content = logicapp_steps[step_name]
 
-                            if logicapp_property_name_1 in logicapp_action_content and logicapp_property_name_2 in logicapp_action_content:
-                                secure_input_property_name = 'inputs'
-                                secure_output_property_name = 'outputs'
-                                logicapp_action_runtime_configuration = logicapp_action_content[logicapp_property_name_1][logicapp_property_name_2]
-                                has_secure_input = 'Yes' if secure_input_property_name in logicapp_action_runtime_configuration else 'No'
-                                has_secure_output = 'Yes' if secure_output_property_name in logicapp_action_runtime_configuration else 'No'
+                            if logicapp_property_name in logicapp_content:
+                                # The action is a step
+                                logicapp_actions = logicapp_content[logicapp_property_name]
 
-                                logicapp_actions_list.append(f"{action_name} ({has_secure_input}/{has_secure_output})")
+                                for action_name in logicapp_actions:
+                                    has_secure_input = False
+                                    has_secure_output = False
+                                    logicapp_action_content = logicapp_actions[action_name]
+                                    logicapp_property_name = 'type'
+                                    logicapp_action_type = logicapp_action_content[logicapp_property_name]
+                                    logicapp_sensitive_action_type = '🔥' if logicapp_action_type.lower() == 'http' else ''
+                                    logicapp_property_name = 'runtimeConfiguration'
+                                    
+                                    if logicapp_property_name in logicapp_action_content:
+                                        logicapp_action_runtime_configuration = logicapp_action_content[logicapp_property_name]
+                                        logicapp_property_name = 'secureData'
+                                        if logicapp_property_name in logicapp_action_runtime_configuration:
+                                            logicapp_action_secure_data = logicapp_action_runtime_configuration[logicapp_property_name]
+                                            logicapp_property_name = 'properties'
+                                            if logicapp_property_name in logicapp_action_secure_data:
+                                                logicapp_action_properties = logicapp_action_secure_data[logicapp_property_name]
+                                                secure_input_property_name = 'inputs'
+                                                secure_output_property_name = 'outputs'
+                                                has_secure_input = True if secure_input_property_name in logicapp_action_properties else False
+                                                has_secure_output = True if secure_output_property_name in logicapp_action_properties else False
+
+                                    secure_input = 'True' if has_secure_input else 'False'
+                                    secure_output = 'True' if has_secure_output else 'False'
+                                    logicapp_actions_list.append(f"{action_name} ({secure_input}/{secure_output}) {logicapp_sensitive_action_type}")
                             else:
-                                logicapp_actions_list.append(f"{action_name} (No/No)")
+                                # The action is a single action
+                                logicapp_property_name = 'type'
+                                logicapp_action_type = logicapp_content[logicapp_property_name]
+                                logicapp_sensitive_action_type = '🔥' if logicapp_action_type.lower() == 'http' else ''
+                                has_secure_input = False
+                                has_secure_output = False
+                                logicapp_property_name = 'runtimeConfiguration'
+                                    
+                                if logicapp_property_name in logicapp_action_content:
+                                    logicapp_action_runtime_configuration = logicapp_action_content[logicapp_property_name]
+                                    logicapp_property_name = 'secureData'
+                                    if logicapp_property_name in logicapp_action_runtime_configuration:
+                                        logicapp_action_secure_data = logicapp_action_runtime_configuration[logicapp_property_name]
+                                        logicapp_property_name = 'properties'
+                                        if logicapp_property_name in logicapp_action_secure_data:
+                                            logicapp_action_properties = logicapp_action_secure_data[logicapp_property_name]
+                                            secure_input_property_name = 'inputs'
+                                            secure_output_property_name = 'outputs'
+                                            has_secure_input = True if secure_input_property_name in logicapp_action_properties else False
+                                            has_secure_output = True if secure_output_property_name in logicapp_action_properties else False
+                                            
+                                secure_input = 'True' if has_secure_input else 'False'
+                                secure_output = 'True' if has_secure_output else 'False'
+                                logicapp_actions_list.append(f"{step_name} ({secure_input}/{secure_output}) {logicapp_sensitive_action_type}")
                     else:
-                        logicapp_actions_list.append('None')
+                        logicapp_actions_list.append('')
 
                     #-- Gather network exposure for run history and Logic App triggers
                     logicapp_property_name = 'accessControl'
@@ -134,8 +178,9 @@ class Module():
                             whitelisted_ips = []
 
                             for caller_ip in logicapp_allowed_caller_Ips:
+                                blockall_ip_range = '0.0.0.0-0.0.0.0'
                                 logicapp_property_name = 'addressRange'
-                                allowed_ip = caller_ip[logicapp_property_name]
+                                allowed_ip = 'No network (deny all)' if caller_ip[logicapp_property_name] == blockall_ip_range else caller_ip[logicapp_property_name]
                                 whitelisted_ips.append(allowed_ip)
 
                             logicapp_run_history_network_exposure = ", ".join(whitelisted_ips)
@@ -150,13 +195,14 @@ class Module():
                             logicapp_property_name = 'allowedCallerIpAddresses'
 
                             if logicapp_property_name in logicapp_access_control_contents:
-                                logicapp_allowed_caller_Ips = logicapp_access_control_contents[logicapp_property_name]
+                                logicapp_allowed_caller_ips = logicapp_access_control_contents[logicapp_property_name]
                                 
                                 whitelisted_ips = []
 
-                                for caller_ip in logicapp_allowed_caller_Ips:
+                                for caller_ip in logicapp_allowed_caller_ips:
+                                    blockall_ip_range = '0.0.0.0-0.0.0.0'
                                     logicapp_property_name = 'addressRange'
-                                    allowed_ip = caller_ip[logicapp_property_name]
+                                    allowed_ip = 'No network (deny all)' if caller_ip[logicapp_property_name] == blockall_ip_range else caller_ip[logicapp_property_name]
                                     whitelisted_ips.append(allowed_ip)
 
                                 logicapp_trigger_network_exposure = ", ".join(whitelisted_ips)
