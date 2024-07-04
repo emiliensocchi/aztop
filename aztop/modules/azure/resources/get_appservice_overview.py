@@ -142,6 +142,9 @@ class Module():
                     ip_restrictions = app_service_config_properties[property_name]
 
                     for ip_restriction in ip_restrictions:
+                        if not 'ipAddress' in ip_restriction:
+                            continue
+
                         default_deny_action_name = 'deny'
                         default_any_ip_address = 'any'
                         action = ip_restriction['action'].lower()
@@ -155,6 +158,9 @@ class Module():
                     if is_network_restricted:
                         # The App Service is only reachable from whitelisted public IPs
                         for ip_restriction in ip_restrictions:
+                            if not 'ipAddress' in ip_restriction:
+                                continue
+
                             default_deny_action_name = 'deny'
                             action = ip_restriction['action'].lower()
                             src_ip_address = ip_restriction['ipAddress']
