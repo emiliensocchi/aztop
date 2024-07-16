@@ -47,7 +47,7 @@ CSV files can then be visualized as tables to acquire a comprehensive overview o
 
 - Overview of all hostnames handled by all Load Balancers
 
-## Screenshots
+## 📷 Screenshots
 
 ![AZTOP's navigation menu](assets/images/01_example_menu.png)
 
@@ -62,15 +62,15 @@ CSV files can then be visualized as tables to acquire a comprehensive overview o
 ![AZTOP output example with Storage Accounts](assets/images/04_example_storageaccounts_output.png)
 
 
-## Prerequisite
+## Prerequisites
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
-- An Entra ID user with:
+- An Entra ID identity with:
   - Global Reader to Entra ID (for entra modules)
-  - Reader access to the subscription(s) that should be analyzed (for azure modules)
+  - Reader access to the Azure subscription(s) that should be analyzed (for azure modules)
 
 
-## Installation 
+## 🔌 Installation 
 
 From the package's root directory, follow the instructions below.
 
@@ -87,7 +87,7 @@ pipenv install -r requirements.txt
 ```
 
 
-## Usage
+## ⚡ Usage
 
 aztop is an interactive tool. Authentication is therefore performed interactively via a web browser, unless an access token is passed manually.
 
@@ -139,7 +139,7 @@ python aztop/aztop.py -sub <sub_1_uuid>,<sub_2_uuid>,<sub_x_uuid>
 Note that aztop scans all subscriptions that an ARM access token provides access to by default.
 
 
-## Visualizing csv data
+## 📊 Visualizing csv data
 
 For each module executed by aztop, a csv file of the following format will be generated in the `aztop/output` directory:
 - yyyy-mm-dd_\<module-name\>.csv
@@ -157,7 +157,7 @@ Once installed, the visualization of all CSV files produced by aztop can easily 
 code aztop/output/*
 ```
 
-## Known issues
+## 🚩 Known issues
 
 ### Rate limiting on the ARM API
 
@@ -174,7 +174,7 @@ When rate limiting kicks in, you will see the following string appearing next to
 More info about rate limiting in ARM: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
 
 
-## Contributing to the project
+## 🤝 Contributing to the project
 
 aztop aims to be a modular framework, where new modules can be plugged into the tool easily. To get started with the developement of a new module, the below procedure is recommended.
 
