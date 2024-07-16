@@ -2,8 +2,6 @@
 
 Simple and extensible framework to acquire a quick and comprehensive overview of an Azure tenant.
 
-![AZTOP logo](assets/images/00_aztop_logo.jpg)
-
 ## 🔎 Overview
 
 aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
