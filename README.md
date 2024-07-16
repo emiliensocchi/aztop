@@ -4,7 +4,7 @@ Simple and extensible framework to acquire a quick and comprehensive overview of
 
 ![AZTOP logo](assets/images/00_aztop_logo.jpg)
 
-## Overview
+## 🔎 Overview
 
 aztop allows visualizing multiple aspects of an Azure environment, by gathering and structuring key configurations into a Comma-Separated Value (CSV) format. 
 
@@ -62,7 +62,7 @@ CSV files can then be visualized as tables to acquire a comprehensive overview o
 ![AZTOP output example with Storage Accounts](assets/images/04_example_storageaccounts_output.png)
 
 
-## Prerequisites
+## ✔️ Prerequisites
 
 - Python 3 ([instructions](https://www.python.org/downloads/))
 - An Entra ID identity with:
