@@ -157,3 +157,43 @@ def get_service_principal_application_permissions(access_token, service_principa
             granted_application_permissions_per_resource[resource_name] = [application_permission_name]
 
     return granted_application_permissions_per_resource
+
+
+def get_latest_tiered_application_permissions():
+    """
+        Retrieves the latest tiered application permissions for MS Graph from the azure-tiering repository.
+
+        More info:
+            https://github.com/emiliensocchi/azure-tiering
+
+        Returns:
+            dict(str:list): lists of application permissions organized per tier
+    
+    """
+    latest_tiered_permissions = {}
+    tiered_msgraph_app_permissions_uri = 'https://github.com/emiliensocchi/azure-tiering/blob/main/Microsoft%20Graph%20application%20permissions/tiered-msgraph-app-permissions.json'
+    response = requests.get(tiered_msgraph_app_permissions_uri)
+
+    if response.status_code != 200:
+        utils.handle_http_error(response)
+
+    tiered_permissions = response.json()
+    tier_0_permissions = []
+    tier_1_permissions = []
+    tier_2_permissions = []
+
+    for tiered_permission in tiered_permissions:
+        permission_name = tiered_permission['assetName']
+        
+        if tiered_permission['tier'] == '0':
+            tier_0_permissions.append(permission_name)
+        elif tiered_permission['tier'] == '1':
+            tier_1_permissions.append(permission_name)
+        else:
+            tier_2_permissions.append(permission_name)
+        
+    latest_tiered_permissions['0'] = tier_0_permissions
+    latest_tiered_permissions['1'] = tier_1_permissions
+    latest_tiered_permissions['2'] = tier_2_permissions
+
+    return latest_tiered_permissions

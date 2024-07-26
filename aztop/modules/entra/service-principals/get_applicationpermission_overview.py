@@ -80,7 +80,12 @@ class Module():
 
         os.makedirs(os.path.dirname(self._output_file_path), exist_ok = True)
 
+        # Retrieve latest Tier-0 permissions
+
         with open(self._output_file_path, 'w') as file:
+            latest_tiered_application_permissions = graph.get_latest_tiered_application_permissions()
+            tier_0_application_permissions = [permission.lower() for permission in latest_tiered_application_permissions['0']]
+
             sensitive_permission = 'write'
             writer = csv.writer(file)
             writer.writerow(column_names)
@@ -91,14 +96,14 @@ class Module():
 
                 for resource_name, permissions in service_principal_permissions_per_resource.items():
                     first_permission = permissions.pop(0)
-                    first_permission_sensitivity='🔥' if sensitive_permission in first_permission.lower() else ''
+                    first_permission_sensitivity='🔥' if first_permission.lower() in tier_0_application_permissions else ''
                     first_row = [service_principal_name, service_principal_type, resource_name, first_permission, first_permission_sensitivity]
                     writer.writerow(first_row)
 
                     list_property_row = [''] * len(column_names)
 
                     for permission in permissions:
-                        permission_sensitivity='🔥' if sensitive_permission in permission.lower() else ''
+                        permission_sensitivity='🔥' if permission.lower() in tier_0_application_permissions else ''
                         list_property_row[1] = service_principal_type
                         list_property_row[2] = resource_name
                         list_property_row[3] = permission
