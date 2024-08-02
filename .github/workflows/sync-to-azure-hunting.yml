@@ -1,7 +1,8 @@
 name: Synchronize to remote directory
 run-name: Sync repo to remote directory
-workflow_dispatch:
-on: push
+on: 
+  workflow_dispatch:
+  push:
 
 jobs:
   sync-to-remote-dir:
