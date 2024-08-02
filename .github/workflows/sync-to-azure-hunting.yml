@@ -14,7 +14,7 @@ jobs:
     - name: Push
       uses: emiliensocchi/actions@sync-to-remote-dir
       env:
-        API_TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       with:
         source_directory: '.'
         destination_directory: 'Tools/aztop'
